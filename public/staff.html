@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>I Realty Technologies — Staff</title>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-100 text-slate-900">
+
+<div x-data="staffApp()" x-init="init()" class="min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-[#071f49] text-white">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold">I Realty Technologies</h1>
+        <p class="text-sm text-blue-200">Staff Dashboard</p>
+      </div>
+
+      <div x-show="user">
+        <span class="text-sm">
+          <strong x-text="user?.role?.toUpperCase()"></strong>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- Loading -->
+    <div x-show="loading" class="bg-white rounded-xl p-6 shadow">
+      Loading...
+    </div>
+
+    <!-- Login required -->
+    <div x-show="!loading && loginUrl"
+         class="bg-white rounded-xl shadow p-8 text-center">
+      <h2 class="text-2xl font-bold mb-3">Staff Sign-in Required</h2>
+      <p class="text-slate-600 mb-5">
+        Please sign in using your Hatchable account.
+      </p>
+
+      <a :href="loginUrl"
+         class="inline-block bg-[#071f49] text-white px-6 py-3 rounded-lg font-semibold">
+        Sign in
+      </a>
+    </div>
+
+    <!-- Access denied -->
+    <div x-show="!loading && !loginUrl && accessDenied"
+         class="bg-white rounded-xl shadow p-8 text-center">
+      <h2 class="text-2xl font-bold mb-3">Staff Access Not Assigned</h2>
+      <p class="text-slate-600">
+        Your account has not been assigned an Admin, VP, or Agent role.
+      </p>
+    </div>
+
+    <!-- Dashboard -->
+    <div x-show="!loading && user && !accessDenied">
+
+      <!-- Top -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+
+        <div>
+          <h2 class="text-2xl font-bold">
+            Welcome, <span x-text="user?.name || 'Staff'"></span>
+          </h2>
+
+          <p class="text-slate-600">
+            Manage property inventory and listings.
+          </p>
+        </div>
+
+        <button @click="newProperty()"
+                class="bg-[#c99a28] hover:bg-[#b88a1f] text-white px-5 py-3 rounded-lg font-semibold">
+          + Add Property
+        </button>
+
+      </div>
+
+      <!-- Message -->
+      <div x-show="message"
+           x-text="message"
+           class="mb-5 bg-green-100 text-green-800 px-4 py-3 rounded-lg">
+      </div>
+
+      <div x-show="error"
+           x-text="error"
+           class="mb-5 bg-red-100 text-red-800 px-4 py-3 rounded-lg">
+      </div>
+
+      <!-- Admin Staff Access -->
+      <section x-show="user?.role === 'admin'"
+               class="bg-white rounded-xl shadow p-6 mb-6">
+
+        <h3 class="text-xl font-bold mb-4">Staff Access</h3>
+
+        <div class="grid md:grid-cols-3 gap-3">
+
+          <input x-model="staffEmail"
+                 type="email"
+                 placeholder="Staff email"
+                 class="border rounded-lg px-4 py-3">
+
+          <select x-model="staffRole"
+                  class="border rounded-lg px-4 py-3">
+            <option value="agent">Agent</option>
+            <option value="vp">VP</option>
+          </select>
+
+          <button @click="assignStaff()"
+                  class="bg-[#071f49] text-white rounded-lg px-4 py-3 font-semibold">
+            Assign Role
+          </button>
+
+        </div>
+
+        <div class="mt-5 overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b text-left">
+                <th class="p-3">Email</th>
+                <th class="p-3">Role</th>
+                <th class="p-3">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <template x-for="staff in staffList" :key="staff.email">
+                <tr class="border-b">
+                  <td class="p-3" x-text="staff.email"></td>
+                  <td class="p-3 font-semibold uppercase" x-text="staff.role"></td>
+                  <td class="p-3">
+                    <button @click="removeStaff(staff.email)"
+                            class="text-red-600 font-semibold">
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Property Form -->
+      <section x-show="editing"
+               class="bg-white rounded-xl shadow p-6 mb-6">
+
+        <div class="flex justify-between items-center mb-5">
+          <h3 class="text-xl font-bold"
+              x-text="form.id ? 'Edit Property' : 'Add Property'"></h3>
+
+          <button @click="editing=false"
+                  class="text-slate-500">
+            ✕ Close
+          </button>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">Title *</label>
+            <input x-model="form.title"
+                   class="w-full border rounded-lg px-4 py-3"
+                   placeholder="Premium villa for sale">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">Property Type *</label>
+            <select x-model="form.property_type"
+                    class="w-full border rounded-lg px-4 py-3">
+              <option value="">Select type</option>
+              <option>Open Plot</option>
+              <option>Agriculture Land</option>
+              <option>Chance Property</option>
+              <option>Flat</option>
+              <option>Villa</option>
+              <option>Commercial</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">City *</label>
+            <select x-model="form.city"
+                    class="w-full border rounded-lg px-4 py-3">
+              <option value="">Select city</option>
+              <option>Hyderabad</option>
+              <option>Bangalore</option>
+              <option>Delhi</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">Locality</label>
+            <input x-model="form.locality"
+                   class="w-full border rounded-lg px-4 py-3"
+                   placeholder="Kokapet">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">Area</label>
+            <input x-model="form.area_value"
+                   type="number"
+                   class="w-full border rounded-lg px-4 py-3"
+                   placeholder="2000">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">Area Unit</label>
+            <select x-model="form.area_unit"
+                    class="w-full border rounded-lg px-4 py-3">
+              <option>sq.ft</option>
+              <option>sq.yd</option>
+              <option>acres</option>
+              <option>cents</option>
+              <option>guntas</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">Price</label>
+            <input x-model="form.price_value"
+                   type="number"
+                   class="w-full border rounded-lg px-4 py-3"
+                   placeholder="7500000">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">Price Unit</label>
+            <select x-model="form.price_unit"
+                    class="w-full border rounded-lg px-4 py-3">
+              <option>total</option>
+              <option>per sq.ft</option>
+              <option>per sq.yd</option>
+              <option>per acre</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">Bedrooms</label>
+            <input x-model="form.bedrooms"
+                   type="number"
+                   class="w-full border rounded-lg px-4 py-3"
+                   placeholder="3">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">Status</label>
+            <select x-model="form.status"
+                    class="w-full border rounded-lg px-4 py-3">
+              <option value="active">Active</option>
+              <option value="draft">Draft</option>
+              <option value="sold">Sold</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">Agent Name</label>
+            <input x-model="form.agent_name"
+                   class="w-full border rounded-lg px-4 py-3">
+          </div>
+
+          <!-- Admin only -->
+          <div x-show="user?.role === 'admin'">
+            <label class="block text-sm font-semibold mb-1">Agent Phone</label>
+            <input x-model="form.agent_phone"
+                   class="w-full border rounded-lg px-4 py-3">
+          </div>
+
+          <div x-show="user?.role === 'admin'">
+            <label class="block text-sm font-semibold mb-1">Agent Email</label>
+            <input x-model="form.agent_email"
+                   type="email"
+                   class="w-full border rounded-lg px-4 py-3">
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold mb-1">Description</label>
+            <textarea x-model="form.description"
+                      rows="4"
+                      class="w-full border rounded-lg px-4 py-3"></textarea>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold mb-1">
+              Features
+            </label>
+            <textarea x-model="form.features"
+                      rows="3"
+                      class="w-full border rounded-lg px-4 py-3"
+                      placeholder="HMDA approved, Gated community, Near ORR"></textarea>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold mb-1">
+              Image URLs
+            </label>
+            <textarea x-model="imageText"
+                      rows="3"
+                      class="w-full border rounded-lg px-4 py-3"
+                      placeholder="One image URL per line"></textarea>
+          </div>
+
+          <!-- Admin only -->
+          <label x-show="user?.role === 'admin'"
+                 class="md:col-span-2 flex items-center gap-3">
+            <input type="checkbox"
+                   x-model="form.allow_agent_contact"
+                   class="w-5 h-5">
+            <span>
+              Allow this property's agent phone to be visible to the public
+            </span>
+          </label>
+
+        </div>
+
+        <div class="flex gap-3 mt-6">
+
+          <button @click="saveProperty()"
+                  class="bg-[#071f49] text-white px-6 py-3 rounded-lg font-semibold">
+            Save Property
+          </button>
+
+          <button @click="editing=false"
+                  class="border px-6 py-3 rounded-lg">
+            Cancel
+          </button>
+
+        </div>
+      </section>
+
+      <!-- Inventory -->
+      <section class="bg-white rounded-xl shadow overflow-hidden">
+
+        <div class="p-6 border-b">
+          <h3 class="text-xl font-bold">Property Inventory</h3>
+          <p class="text-sm text-slate-500">
+            <span x-text="inventory.length"></span> properties
+          </p>
+        </div>
+
+        <div class="overflow-x-auto">
+
+          <table class="w-full text-sm">
+
+            <thead class="bg-slate-50">
+              <tr class="text-left">
+                <th class="p-4">Property</th>
+                <th class="p-4">Location</th>
+                <th class="p-4">Price</th>
+                <th class="p-4">Status</th>
+                <th class="p-4">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              <template x-for="item in inventory" :key="item.id">
+
+                <tr class="border-t">
+
+                  <td class="p-4">
+                    <div class="font-semibold" x-text="item.title"></div>
+                    <div class="text-xs text-slate-500"
+                         x-text="item.property_type"></div>
+                  </td>
+
+                  <td class="p-4">
+                    <span x-text="item.locality || ''"></span>
+                    <span x-show="item.locality">, </span>
+                    <span x-text="item.city"></span>
+                  </td>
+
+                  <td class="p-4"
+                      x-text="item.price_value ? '₹' + Number(item.price_value).toLocaleString('en-IN') : 'Contact us'">
+                  </td>
+
+                  <td class="p-4">
+                    <span x-text="item.status"
+                          class="px-2 py-1 rounded bg-slate-100"></span>
+                  </td>
+
+                  <td class="p-4 whitespace-nowrap">
+
+                    <button x-show="user?.role === 'admin' || user?.role === 'vp' || item.is_mine"
+                            @click="editProperty(item)"
+                            class="text-blue-700 font-semibold mr-3">
+                      Edit
+                    </button>
+
+                    <button x-show="user?.role === 'admin' || user?.role === 'vp' || item.is_mine"
+                            @click="deleteProperty(item.id)"
+                            class="text-red-600 font-semibold">
+                      Delete
+                    </button>
+
+                  </td>
+
+                </tr>
+
+              </template>
+
+              <tr x-show="inventory.length === 0">
+                <td colspan="5" class="p-10 text-center text-slate-500">
+                  No properties added yet.
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+</div>
+
+
+<script>
+function staffApp() {
+
+  return {
+
+    loading: true,
+    loginUrl: null,
+    accessDenied: false,
+
+    user: null,
+    inventory: [],
+    staffList: [],
+
+    editing: false,
+
+    staffEmail: '',
+    staffRole: 'agent',
+
+    message: '',
+    error: '',
+
+    imageText: '',
+
+    form: {
+      id: null,
+      title: '',
+      property_type: '',
+      city: '',
+      locality: '',
+      area_value: '',
+      area_unit: 'sq.ft',
+      price_value: '',
+      price_unit: 'total',
+      bedrooms: '',
+      description: '',
+      features: '',
+      image_urls: [],
+      status: 'active',
+      agent_name: '',
+      agent_phone: '',
+      agent_email: '',
+      allow_agent_contact: false
+    },
+
+    async init() {
+
+      try {
+
+        const response = await fetch('/api/staff/me');
+
+        if (response.status === 401) {
+
+          const data = await response.json();
+
+          this.loginUrl = data.login_url || data.loginUrl || null;
+
+          if (!this.loginUrl) {
+            this.loginUrl = '/login';
+          }
+
+          return;
+        }
+
+        if (response.status === 403) {
+          this.accessDenied = true;
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error('Unable to check staff access.');
+        }
+
+        this.user = await response.json();
+
+        await this.loadInventory();
+
+        if (this.user.role === 'admin') {
+          await this.loadStaff();
+        }
+
+      } catch (e) {
+
+        this.error = e.message || 'Something went wrong.';
+
+      } finally {
+
+        this.loading = false;
+
+      }
+
+    },
+
+    async loadInventory() {
+
+      const response = await fetch('/api/inventory/manage');
+
+      if (!response.ok) {
+
+        const data = await response.json().catch(() => ({}));
+
+        throw new Error(data.error || 'Unable to load inventory.');
+
+      }
+
+      const data = await response.json();
+
+      this.inventory = data.inventory || [];
+
+    },
+
+    async loadStaff() {
+
+      const response = await fetch('/api/staff/roles');
+
+      if (!response.ok) return;
+
+      const data = await response.json();
+
+      this.staffList = data.staff || [];
+
+    },
+
+    newProperty() {
+
+      this.clearMessages();
+
+      this.form = {
+        id: null,
+        title: '',
+        property_type: '',
+        city: '',
+        locality: '',
+        area_value: '',
+        area_unit: 'sq.ft',
+        price_value: '',
+        price_unit: 'total',
+        bedrooms: '',
+        description: '',
+        features: '',
+        image_urls: [],
+        status: 'active',
+        agent_name: '',
+        agent_phone: '',
+        agent_email: '',
+        allow_agent_contact: false
+      };
+
+      this.imageText = '';
+      this.editing = true;
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+
+    },
+
+    editProperty(item) {
+
+      this.clearMessages();
+
+      this.form = {
+        ...item,
+        allow_agent_contact: Boolean(item.allow_agent_contact)
+      };
+
+      this.imageText = Array.isArray(item.image_urls)
+        ? item.image_urls.join('\n')
+        : '';
+
+      this.editing = true;
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+
+    },
+
+    async saveProperty() {
+
+      this.clearMessages();
+
+      if (!this.form.title ||
+          !this.form.property_type ||
+          !this.form.city) {
+
+        this.error = 'Title, property type and city are required.';
+        return;
+
+      }
+
+      const payload = {
+        ...this.form,
+        image_urls: this.imageText
+          .split('\n')
+          .map(x => x.trim())
+          .filter(Boolean)
+      };
+
+      try {
+
+        const method = this.form.id ? 'PUT' : 'POST';
+
+        const response = await fetch('/api/inventory/manage', {
+
+          method,
+
+          headers: {
+            'Content-Type': 'application/json'
+          },
+
+          body: JSON.stringify(payload)
+
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Unable to save property.');
+        }
+
+        this.message = this.form.id
+          ? 'Property updated successfully.'
+          : 'Property added successfully.';
+
+        this.editing = false;
+
+        await this.loadInventory();
+
+      } catch (e) {
+
+        this.error = e.message || 'Unable to save property.';
+
+      }
+
+    },
+
+    async deleteProperty(id) {
+
+      if (!confirm('Delete this property?')) return;
+
+      this.clearMessages();
+
+      try {
+
+        const response = await fetch(
+          '/api/inventory/manage?id=' + encodeURIComponent(id),
+          {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id })
+          }
+        );
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Unable to delete property.');
+        }
+
+        this.message = 'Property deleted.';
+
+        await this.loadInventory();
+
+      } catch (e) {
+
+        this.error = e.message || 'Unable to delete property.';
+
+      }
+
+    },
+
+    async assignStaff() {
+
+      this.clearMessages();
+
+      if (!this.staffEmail.includes('@')) {
+
+        this.error = 'Enter a valid email address.';
+        return;
+
+      }
+
+      try {
+
+        const response = await fetch('/api/staff/roles', {
+
+          method: 'POST',
+
+          headers: {
+            'Content-Type': 'application/json'
+          },
+
+          body: JSON.stringify({
+            email: this.staffEmail,
+            role: this.staffRole
+          })
+
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Unable to assign role.');
+        }
+
+        this.message =
+          this.staffEmail + ' assigned as ' +
+          this.staffRole.toUpperCase();
+
+        this.staffEmail = '';
+
+        await this.loadStaff();
+
+      } catch (e) {
+
+        this.error = e.message || 'Unable to assign staff role.';
+
+      }
+
+    },
+
+    async removeStaff(email) {
+
+      if (!confirm('Remove staff access for ' + email + '?')) {
+        return;
+      }
+
+      this.clearMessages();
+
+      try {
+
+        const response = await fetch('/api/staff/roles', {
+
+          method: 'DELETE',
+
+          headers: {
+            'Content-Type': 'application/json'
+          },
+
+          body: JSON.stringify({
+            email
+          })
+
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Unable to remove staff.');
+        }
+
+        this.message = 'Staff access removed.';
+
+        await this.loadStaff();
+
+      } catch (e) {
+
+        this.error = e.message || 'Unable to remove staff.';
+
+      }
+
+    },
+
+    clearMessages() {
+      this.message = '';
+      this.error = '';
+    }
+
+  };
+
+}
+</script>
+
+</body>
+</html>

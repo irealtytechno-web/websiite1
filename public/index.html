@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="I Realty Technologies Pvt. Ltd. — property sales, purchase and channel partner services across Hyderabad, Bangalore and Delhi.">
+  <title>I Realty Technologies Pvt. Ltd.</title>
+  <link rel="stylesheet" href="/theme.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="/" aria-label="I Realty Technologies home">
+    <img src="/logo.svg" alt="I Realty Technologies Pvt. Ltd.">
+  </a>
+  <nav><a href="#properties">Properties</a><a href="#services">Services</a><a href="#about">About</a><a class="nav-cta" href="https://wa.me/916300181062?text=Hello%20I%20Realty%20Technologies">WhatsApp</a></nav>
+</header>
+<main>
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">REAL ESTATE • TECHNOLOGY • CHANNEL PARTNERS</span>
+      <h1>Find the right property.<br><em>Build the right future.</em></h1>
+      <p>Property sales, purchases and channel-partner opportunities across Hyderabad, Bangalore and Delhi.</p>
+    </div>
+    <div class="search-panel" id="properties">
+      <div class="panel-title"><span>Property Search</span><small>Live inventory</small></div>
+      <div class="filters">
+        <label>Location<select id="city"><option value="">All locations</option><option>Hyderabad</option><option>Bangalore</option><option>Delhi</option></select></label>
+        <label>Property Type<select id="type"><option value="">All property types</option><option>Open Plot</option><option>Agriculture Land</option><option>Chance Property</option><option>Flat</option><option>Villa</option><option>Commercial</option></select></label>
+        <button id="searchBtn">Search Properties</button>
+      </div>
+      <div id="results" class="results"><div class="loading">Loading available properties…</div></div>
+    </div>
+  </section>
+  <section class="trust-strip"><div><strong>3</strong><span>Markets</span></div><div><strong>6</strong><span>Property Categories</span></div><div><strong>1</strong><span>Trusted Contact</span></div><div><strong>24/7</strong><span>WhatsApp Enquiries</span></div></section>
+  <section class="services" id="services">
+    <div class="section-heading"><span class="eyebrow">WHAT WE DO</span><h2>More than real estate.</h2><p>One company connecting property, technology and trusted business partners.</p></div>
+    <div class="service-grid">
+      <article class="service-card active"><div class="service-icon">⌂</div><span class="tag">NOW</span><h3>Real Estate</h3><p>Open plots, agriculture lands, chance properties, flats, villas and commercial opportunities.</p><a href="#properties">Explore properties →</a></article>
+      <article class="service-card"><div class="service-icon">▣</div><span class="tag coming">COMING SOON</span><h3>Technologies</h3><p>Electronics firmware, embedded systems and product development support for technology businesses.</p><span class="muted">Launching soon</span></article>
+      <article class="service-card"><div class="service-icon">◇</div><span class="tag coming">COMING SOON</span><h3>Interiors</h3><p>Interior design and execution support through established interior developers as a channel partner.</p><span class="muted">Launching soon</span></article>
+      <article class="service-card"><div class="service-icon">⇄</div><span class="tag coming">COMING SOON</span><h3>Import / Export</h3><p>Support for China goods sourcing, import and export opportunities with a practical channel-partner approach.</p><span class="muted">Launching soon</span></article>
+    </div>
+  </section>
+  <section class="about" id="about"><div><span class="eyebrow">I REALTY TECHNOLOGIES</span><h2>Property expertise with a technology mindset.</h2></div><p>We are building a simple, trustworthy platform for buyers, sellers, agents and channel partners. Real estate is our first service; technology, interiors and international trade are the next steps.</p></section>
+</main>
+<footer><div class="footer-brand"><img src="/logo.svg" alt="I Realty Technologies"><p>I Realty Technologies Pvt. Ltd.</p></div><div><strong>Contact</strong><a href="tel:+916300181062">+91 6300181062</a><a href="https://wa.me/916300181062">WhatsApp us</a></div><div><strong>Markets</strong><span>Hyderabad</span><span>Bangalore</span><span>Delhi</span></div></footer>
+<script>
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+async function load(){const city=document.getElementById('city').value,type=document.getElementById('type').value;const box=document.getElementById('results');box.innerHTML='<div class="loading">Loading available properties…</div>';try{const q=new URLSearchParams();if(city)q.set('city',city);if(type)q.set('type',type);const r=await fetch('/api/inventory/list?'+q);const data=await r.json();if(!Array.isArray(data)||!data.length){box.innerHTML='<div class="empty"><strong>No properties listed yet.</strong><span>New opportunities will appear here soon.</span><a href="https://wa.me/916300181062?text=I%20am%20looking%20for%20a%20property">Tell us what you are looking for →</a></div>';return;}box.innerHTML=data.map(p=>`<article class="property"><div class="property-image">${p.image_url?`<img src="${esc(p.image_url)}" alt="${esc(p.title)}">`:'<span>PROPERTY</span>'}</div><div class="property-body"><div class="property-top"><span>${esc(p.property_type)}</span><span>${esc(p.city)}</span></div><h3>${esc(p.title)}</h3><p>${esc(p.locality||'Location details available on enquiry')}</p><div class="property-meta">${p.area_value?`<span>${esc(p.area_value)} ${esc(p.area_unit||'sq.ft')}</span>`:''}${p.price_value?`<strong>₹ ${esc(p.price_value)} ${esc(p.price_unit||'')}</strong>`:''}</div><a class="contact-property" href="https://wa.me/${String(p.contact_phone||'+916300181062').replace(/\D/g,'')}?text=${encodeURIComponent('Hello, I am interested in: '+(p.title||'this property'))}">Enquire on WhatsApp</a></div></article>`).join('');}catch(e){box.innerHTML='<div class="empty"><strong>Properties are temporarily unavailable.</strong><span>Please contact us directly on WhatsApp.</span></div>'}}
+document.getElementById('searchBtn').onclick=load;document.getElementById('city').onchange=load;document.getElementById('type').onchange=load;load();
+</script>
+</body></html>

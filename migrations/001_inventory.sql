@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS inventory (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  property_type TEXT NOT NULL CHECK (property_type IN ('Open Plot','Agriculture Land','Chance Property','Flat','Villa','Commercial')),
+  city TEXT NOT NULL CHECK (city IN ('Hyderabad','Bangalore','Delhi')),
+  locality TEXT,
+  area_value NUMERIC(18,2),
+  area_unit TEXT DEFAULT 'sq.ft',
+  price_value NUMERIC(18,2),
+  price_unit TEXT DEFAULT 'total',
+  bedrooms INTEGER,
+  description TEXT,
+  features TEXT,
+  image_urls JSONB NOT NULL DEFAULT '[]'::jsonb,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','sold','draft')),
+  agent_name TEXT,
+  agent_phone TEXT,
+  agent_email TEXT,
+  created_by_email TEXT NOT NULL,
+  allow_agent_contact BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)
