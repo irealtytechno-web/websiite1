@@ -7,6 +7,9 @@
 
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="supabase-client.js"></script>
 </head>
 
 <body class="bg-slate-100 text-slate-900">
@@ -39,15 +42,16 @@
     <!-- Login required -->
     <div x-show="!loading && loginUrl"
          class="bg-white rounded-xl shadow p-8 text-center">
-      <h2 class="text-2xl font-bold mb-3">Staff Sign-in Required</h2>
-      <p class="text-slate-600 mb-5">
-        Please sign in using your Hatchable account.
-      </p>
-
-      <a :href="loginUrl"
-         class="inline-block bg-[#071f49] text-white px-6 py-3 rounded-lg font-semibold">
-        Sign in
-      </a>
+      <h2 class="text-2xl font-bold mb-3">Staff Sign-in</h2>
+      <p class="text-slate-600 mb-5">Use your I Realty staff account. New staff must create an account before an Admin assigns their role.</p>
+      <div class="max-w-sm mx-auto grid gap-3 text-left">
+        <input x-model="loginEmail" type="email" placeholder="Email address" class="border rounded-lg px-4 py-3">
+        <input x-model="loginPassword" type="password" placeholder="Password" class="border rounded-lg px-4 py-3">
+        <button @click="signIn()" class="bg-[#071f49] text-white px-6 py-3 rounded-lg font-semibold">Sign in</button>
+        <button @click="signUp()" class="border px-6 py-3 rounded-lg font-semibold">Create account</button>
+      </div>
+      <p x-show="message" x-text="message" class="mt-4 text-sm text-green-700"></p>
+      <p x-show="error" x-text="error" class="mt-4 text-sm text-red-700"></p>
     </div>
 
     <!-- Access denied -->
@@ -203,6 +207,13 @@
           </div>
 
           <div>
+            <label class="block text-sm font-semibold mb-1">Google Maps location</label>
+            <input x-model="form.map_location"
+                   class="w-full border rounded-lg px-4 py-3"
+                   placeholder="Paste Google Maps link or location name">
+          </div>
+
+          <div>
             <label class="block text-sm font-semibold mb-1">Area</label>
             <input x-model="form.area_value"
                    type="number"
@@ -298,12 +309,13 @@
 
           <div class="md:col-span-2">
             <label class="block text-sm font-semibold mb-1">
-              Image URLs
+              Property images (maximum 3)
             </label>
+            <input @change="imageFiles=Array.from($event.target.files)" type="file" accept="image/*" multiple class="w-full border rounded-lg px-4 py-3 mb-3">
             <textarea x-model="imageText"
                       rows="3"
                       class="w-full border rounded-lg px-4 py-3"
-                      placeholder="One image URL per line"></textarea>
+                      placeholder="Or paste up to 3 image URLs, one per line"></textarea>
           </div>
 
           <!-- Admin only -->
@@ -442,11 +454,14 @@ function staffApp() {
 
     staffEmail: '',
     staffRole: 'agent',
+    loginEmail: '',
+    loginPassword: '',
 
     message: '',
     error: '',
 
     imageText: '',
+    imageFiles: [],
 
     form: {
       id: null,
@@ -802,5 +817,96 @@ function staffApp() {
 }
 </script>
 
+<script>
+/* Supabase implementation: this replaces the previous Hatchable API calls. */
+const hatchableStaffApp = staffApp;
+window.staffApp = function () {
+  const app = hatchableStaffApp();
+  const sb = getSupabase();
+  const fail = error => { if (error) throw error; };
+  const cleanPayload = form => ({
+    title: form.title, property_type: form.property_type, city: form.city, locality: form.locality || null, map_location: form.map_location || null,
+    area_value: form.area_value || null, area_unit: form.area_unit || 'sq.ft', price_value: form.price_value || null,
+    price_unit: form.price_unit || 'total', bedrooms: form.bedrooms || null, description: form.description || null,
+    features: form.features || null, image_urls: app.imageText.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 3),
+    status: form.status || 'active', agent_name: form.agent_name || null, agent_phone: form.agent_phone || null,
+    agent_email: form.agent_email || null, allow_agent_contact: Boolean(form.allow_agent_contact)
+  });
+  app.init = async function () {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { this.loginUrl = '#login'; return; }
+      const { data: role, error } = await sb.from('staff_roles').select('role').eq('user_id', session.user.id).single();
+      if (error || !role) { this.accessDenied = true; return; }
+      this.user = { role: role.role, email: session.user.email, name: session.user.user_metadata?.full_name || session.user.email };
+      await this.loadInventory();
+      if (this.user.role === 'admin') await this.loadStaff();
+    } catch (e) { this.error = e.message || 'Unable to start the dashboard.'; }
+    finally { this.loading = false; }
+  };
+  app.signIn = async function () {
+    this.clearMessages();
+    const { error } = await sb.auth.signInWithPassword({ email: this.loginEmail, password: this.loginPassword });
+    if (error) { this.error = error.message; return; }
+    window.location.reload();
+  };
+  app.signUp = async function () {
+    this.clearMessages();
+    const { error } = await sb.auth.signUp({ email: this.loginEmail, password: this.loginPassword });
+    if (error) { this.error = error.message; return; }
+    this.message = 'Account created. Ask an Admin to assign your staff role, then sign in.';
+  };
+  app.loadInventory = async function () {
+    const { data, error } = await sb.from('inventory').select('*').order('created_at', { ascending: false }); fail(error);
+    const { data: { user } } = await sb.auth.getUser();
+    this.inventory = (data || []).map(row => ({ ...row, is_mine: row.created_by === user?.id }));
+  };
+  app.loadStaff = async function () {
+    const { data, error } = await sb.from('staff_roles').select('role, profiles(email)').order('created_at'); fail(error);
+    this.staffList = (data || []).map(row => ({ role: row.role, email: row.profiles?.email || '' }));
+  };
+  app.saveProperty = async function () {
+    this.clearMessages();
+    if (!this.form.title || !this.form.property_type || !this.form.city) { this.error = 'Title, property type and city are required.'; return; }
+    const imageUrls = this.imageText.split('\n').map(x => x.trim()).filter(Boolean);
+    const uploads = this.imageFiles || [];
+    if (imageUrls.length + uploads.length > 3) { this.error = 'A property can have a maximum of 3 images in total.'; return; }
+    try {
+      if (uploads.length) {
+        const { data: { user } } = await sb.auth.getUser();
+        for (const file of uploads) {
+          const path = `${user.id}/${Date.now()}-${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
+          const { error: uploadError } = await sb.storage.from('property-images').upload(path, file, { upsert: false });
+          fail(uploadError);
+          imageUrls.push(sb.storage.from('property-images').getPublicUrl(path).data.publicUrl);
+        }
+        this.imageText = imageUrls.join('\n');
+      }
+      const payload = cleanPayload(this.form);
+      const result = this.form.id ? await sb.from('inventory').update(payload).eq('id', this.form.id) : await sb.from('inventory').insert(payload);
+      fail(result.error); this.message = this.form.id ? 'Property updated successfully.' : 'Property added successfully.';
+      this.editing = false; this.imageFiles = []; await this.loadInventory();
+    } catch (e) { this.error = e.message || 'Unable to save property.'; }
+  };
+  app.deleteProperty = async function (id) {
+    if (!confirm('Delete this property?')) return; this.clearMessages();
+    try { const { error } = await sb.from('inventory').delete().eq('id', id); fail(error); this.message = 'Property deleted.'; await this.loadInventory(); }
+    catch (e) { this.error = e.message || 'Unable to delete property.'; }
+  };
+  app.assignStaff = async function () {
+    this.clearMessages();
+    try { const { error } = await sb.rpc('assign_staff', { staff_email: this.staffEmail, desired_role: this.staffRole }); fail(error); this.message = `${this.staffEmail} assigned as ${this.staffRole.toUpperCase()}.`; this.staffEmail = ''; await this.loadStaff(); }
+    catch (e) { this.error = e.message || 'Unable to assign staff role.'; }
+  };
+  app.removeStaff = async function (email) {
+    if (!confirm(`Remove staff access for ${email}?`)) return; this.clearMessages();
+    try { const { error } = await sb.rpc('remove_staff', { staff_email: email }); fail(error); this.message = 'Staff access removed.'; await this.loadStaff(); }
+    catch (e) { this.error = e.message || 'Unable to remove staff.'; }
+  };
+  const originalNewProperty = app.newProperty;
+  app.newProperty = function () { originalNewProperty.call(this); this.imageFiles = []; };
+  return app;
+};
+</script>
 </body>
 </html>

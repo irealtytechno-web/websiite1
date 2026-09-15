@@ -4,14 +4,23 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="I Realty Technologies Pvt. Ltd. — property sales, purchase and channel partner services across Hyderabad, Bangalore and Delhi.">
   <title>I Realty Technologies Pvt. Ltd.</title>
-  <link rel="stylesheet" href="/theme.css">
+  <link rel="stylesheet" href="theme.css">
 </head>
 <body>
 <header class="site-header">
-  <a class="brand" href="/" aria-label="I Realty Technologies home">
-    <img src="/logo.svg" alt="I Realty Technologies Pvt. Ltd.">
-  </a>
-  <nav><a href="#properties">Properties</a><a href="#services">Services</a><a href="#about">About</a><a class="nav-cta" href="https://wa.me/916300181062?text=Hello%20I%20Realty%20Technologies">WhatsApp</a></nav>
+  <div class="utility-bar">
+    <div class="utility-inner">
+      <div class="utility-locations"><span class="pin" aria-hidden="true">●</span><a href="#properties">Hyderabad</a><i></i><a href="#properties">Bangalore</a><i></i><a href="#properties">Delhi</a></div>
+      <div class="utility-contact"><a href="tel:+916300181062"><span aria-hidden="true">☎</span> +91 6300181062</a><i></i><a href="https://wa.me/916300181062?text=Hello%20I%20Realty%20Technologies"><span class="whatsapp-mark" aria-hidden="true">◔</span> WhatsApp</a><b>Your trusted real estate partner</b></div>
+    </div>
+  </div>
+  <div class="main-nav">
+    <a class="brand" href="/" aria-label="I Realty Technologies home"><img src="logo.svg" alt="I Realty Technologies Pvt. Ltd."></a>
+    <nav aria-label="Main navigation">
+      <a class="active" href="#properties">Properties</a><a href="#services">Technologies</a><a href="#services">Interiors</a><a href="#services">Import / Export</a><a href="#about">About Us</a><a href="#contact">Contact</a>
+    </nav>
+    <a class="nav-cta" href="https://wa.me/916300181062?text=Hello%20I%20Realty%20Technologies"><span aria-hidden="true">◔</span> WhatsApp</a>
+  </div>
 </header>
 <main>
   <section class="hero">
@@ -42,10 +51,34 @@
   </section>
   <section class="about" id="about"><div><span class="eyebrow">I REALTY TECHNOLOGIES</span><h2>Property expertise with a technology mindset.</h2></div><p>We are building a simple, trustworthy platform for buyers, sellers, agents and channel partners. Real estate is our first service; technology, interiors and international trade are the next steps.</p></section>
 </main>
-<footer><div class="footer-brand"><img src="/logo.svg" alt="I Realty Technologies"><p>I Realty Technologies Pvt. Ltd.</p></div><div><strong>Contact</strong><a href="tel:+916300181062">+91 6300181062</a><a href="https://wa.me/916300181062">WhatsApp us</a></div><div><strong>Markets</strong><span>Hyderabad</span><span>Bangalore</span><span>Delhi</span></div></footer>
+<footer id="contact"><div class="footer-brand"><img src="/logo.svg" alt="I Realty Technologies"><p>I Realty Technologies Pvt. Ltd.</p></div><div><strong>Contact</strong><a href="tel:+916300181062">+91 6300181062</a><a href="https://wa.me/916300181062">WhatsApp us</a></div><div><strong>Markets</strong><span>Hyderabad</span><span>Bangalore</span><span>Delhi</span></div></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="supabase-client.js"></script>
+<script>
+  // Keeps the existing search UI independent from a server API when deployed statically.
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = async (url, options) => {
+    if (typeof url === 'string' && url.startsWith('/api/inventory/list')) {
+      const params = new URL(url, window.location.origin).searchParams;
+      let query = getSupabase().from('public_inventory').select('*').order('created_at', { ascending: false });
+      if (params.get('city')) query = query.eq('city', params.get('city'));
+      if (params.get('type')) query = query.eq('property_type', params.get('type'));
+      const { data, error } = await query;
+      return new Response(JSON.stringify(error ? { error: error.message } : data), { status: error ? 500 : 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    return originalFetch(url, options);
+  };
+</script>
 <script>
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 async function load(){const city=document.getElementById('city').value,type=document.getElementById('type').value;const box=document.getElementById('results');box.innerHTML='<div class="loading">Loading available properties…</div>';try{const q=new URLSearchParams();if(city)q.set('city',city);if(type)q.set('type',type);const r=await fetch('/api/inventory/list?'+q);const data=await r.json();if(!Array.isArray(data)||!data.length){box.innerHTML='<div class="empty"><strong>No properties listed yet.</strong><span>New opportunities will appear here soon.</span><a href="https://wa.me/916300181062?text=I%20am%20looking%20for%20a%20property">Tell us what you are looking for →</a></div>';return;}box.innerHTML=data.map(p=>`<article class="property"><div class="property-image">${p.image_url?`<img src="${esc(p.image_url)}" alt="${esc(p.title)}">`:'<span>PROPERTY</span>'}</div><div class="property-body"><div class="property-top"><span>${esc(p.property_type)}</span><span>${esc(p.city)}</span></div><h3>${esc(p.title)}</h3><p>${esc(p.locality||'Location details available on enquiry')}</p><div class="property-meta">${p.area_value?`<span>${esc(p.area_value)} ${esc(p.area_unit||'sq.ft')}</span>`:''}${p.price_value?`<strong>₹ ${esc(p.price_value)} ${esc(p.price_unit||'')}</strong>`:''}</div><a class="contact-property" href="https://wa.me/${String(p.contact_phone||'+916300181062').replace(/\D/g,'')}?text=${encodeURIComponent('Hello, I am interested in: '+(p.title||'this property'))}">Enquire on WhatsApp</a></div></article>`).join('');}catch(e){box.innerHTML='<div class="empty"><strong>Properties are temporarily unavailable.</strong><span>Please contact us directly on WhatsApp.</span></div>'}}
 document.getElementById('searchBtn').onclick=load;document.getElementById('city').onchange=load;document.getElementById('type').onchange=load;load();
+</script>
+<script>
+const mapEsc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const mapHref=location=>{if(!location)return '';try{const url=new URL(location);if(url.protocol==='https:'&&(url.hostname==='maps.app.goo.gl'||url.hostname.endsWith('.google.com')||url.hostname==='google.com'))return url.href}catch(_){}return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`};
+window.load=async function(){const city=document.getElementById('city').value,type=document.getElementById('type').value,box=document.getElementById('results');box.innerHTML='<div class="loading">Loading available properties…</div>';try{let q=getSupabase().from('public_inventory').select('*').order('created_at',{ascending:false});if(city)q=q.eq('city',city);if(type)q=q.eq('property_type',type);const{data,error}=await q;if(error)throw error;if(!data?.length){box.innerHTML='<div class="empty"><strong>No properties listed yet.</strong><span>New opportunities will appear here soon.</span></div>';return}box.innerHTML=data.map(p=>{const href=mapHref(p.map_location);return `<article class="property"><div class="property-image">${p.image_url?`<img src="${mapEsc(p.image_url)}" alt="${mapEsc(p.title)}">`:'<span>PROPERTY</span>'}</div><div class="property-body"><div class="property-top"><span>${mapEsc(p.property_type)}</span><span>${mapEsc(p.city)}</span></div><h3>${mapEsc(p.title)}</h3><p>${mapEsc(p.locality||'Location details available on enquiry')}</p>${href?`<a class="map-link" href="${mapEsc(href)}" target="_blank" rel="noopener">View on Google Maps ↗</a>`:''}<div class="property-meta">${p.area_value?`<span>${mapEsc(p.area_value)} ${mapEsc(p.area_unit||'sq.ft')}</span>`:''}${p.price_value?`<strong>₹ ${mapEsc(p.price_value)} ${mapEsc(p.price_unit||'')}</strong>`:''}</div><a class="contact-property" href="https://wa.me/${String(p.contact_phone||'+916300181062').replace(/\D/g,'')}?text=${encodeURIComponent('Hello, I am interested in: '+(p.title||'this property'))}">Enquire on WhatsApp</a></div></article>`}).join('')}catch(_){box.innerHTML='<div class="empty"><strong>Properties are temporarily unavailable.</strong><span>Please contact us directly on WhatsApp.</span></div>'}};
+document.getElementById('searchBtn').onclick=window.load;document.getElementById('city').onchange=window.load;document.getElementById('type').onchange=window.load;window.load();
 </script>
 </body></html>
