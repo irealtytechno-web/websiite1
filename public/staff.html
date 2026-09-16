@@ -24,10 +24,16 @@
         <p class="text-sm text-blue-200">Staff Dashboard</p>
       </div>
 
-      <div x-show="user">
-        <span class="text-sm">
-          <strong x-text="user?.role?.toUpperCase()"></strong>
-        </span>
+      <div x-show="user || accessDenied" class="flex items-center gap-4">
+        <template x-if="user">
+          <span class="text-sm">
+            <strong x-text="user?.role?.toUpperCase()"></strong>
+          </span>
+        </template>
+        <button @click="signOut()"
+                class="border border-white/40 hover:bg-white/10 px-4 py-2 rounded-lg text-sm font-semibold">
+          Sign Out
+        </button>
       </div>
     </div>
   </header>
@@ -57,10 +63,24 @@
     <!-- Access denied -->
     <div x-show="!loading && !loginUrl && accessDenied"
          class="bg-white rounded-xl shadow p-8 text-center">
-      <h2 class="text-2xl font-bold mb-3">Staff Access Not Assigned</h2>
-      <p class="text-slate-600">
-        Your account has not been assigned an Admin, VP, or Agent role.
-      </p>
+      <div class="mx-auto max-w-lg">
+        <div class="text-4xl mb-4">🔐</div>
+        <h2 class="text-2xl font-bold mb-3">Staff Access Not Assigned</h2>
+        <p class="text-slate-600 mb-6">
+          Your account has not been assigned an Admin, VP, or Agent role.
+          Please ask the Admin to assign your role.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-3">
+          <button @click="signOut()"
+                  class="bg-[#071f49] text-white px-6 py-3 rounded-lg font-semibold">
+            Back to Login
+          </button>
+          <button @click="location.href='index.html'"
+                  class="border border-slate-300 px-6 py-3 rounded-lg font-semibold">
+            Go to Website
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Dashboard -->
@@ -79,7 +99,7 @@
           </p>
         </div>
 
-        <button @click="newProperty()"
+        <button x-show="user?.role === 'admin' || user?.role === 'agent'" @click="newProperty()"
                 class="bg-[#c99a28] hover:bg-[#b88a1f] text-white px-5 py-3 rounded-lg font-semibold">
           + Add Property
         </button>
@@ -148,6 +168,110 @@
               </template>
             </tbody>
           </table>
+        </div>
+      </section>
+
+
+      <!-- Website Promotions / Announcements -->
+      <section x-show="user?.role === 'admin'"
+               class="bg-white rounded-xl shadow p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h3 class="text-xl font-bold">Website Promotions</h3>
+            <p class="text-sm text-slate-500">Control the left/right commercial ads and the top latest-property ribbon.</p>
+          </div>
+          <button @click="loadPromotions()" class="border px-3 py-2 rounded-lg text-sm font-semibold">Refresh</button>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-3 mb-5">
+          <label class="flex items-center gap-3 border rounded-xl p-4 bg-slate-50">
+            <input type="checkbox" x-model="promoSettings.left_ad_enabled" @change="savePromoSettings()" class="w-5 h-5">
+            <span><strong>Left ad</strong><small class="block text-slate-500">Show left commercial slot</small></span>
+          </label>
+          <label class="flex items-center gap-3 border rounded-xl p-4 bg-slate-50">
+            <input type="checkbox" x-model="promoSettings.right_ad_enabled" @change="savePromoSettings()" class="w-5 h-5">
+            <span><strong>Right ad</strong><small class="block text-slate-500">Show right commercial slot</small></span>
+          </label>
+          <label class="flex items-center gap-3 border rounded-xl p-4 bg-slate-50">
+            <input type="checkbox" x-model="promoSettings.top_ribbon_enabled" @change="savePromoSettings()" class="w-5 h-5">
+            <span><strong>Top ribbon</strong><small class="block text-slate-500">Show latest updates ribbon</small></span>
+          </label>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-5">
+          <div class="border rounded-xl p-5">
+            <h4 class="font-bold text-lg mb-3">Add / update commercial ad</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <label>Side
+                <select x-model="promoAd.side" class="w-full border rounded-lg px-3 py-2 mt-1">
+                  <option value="left">Left</option><option value="right">Right</option>
+                </select>
+              </label>
+              <label>Display seconds
+                <input x-model.number="promoAd.display_seconds" type="number" min="2" max="30" class="w-full border rounded-lg px-3 py-2 mt-1">
+              </label>
+              <label>Title
+                <input x-model="promoAd.title" class="w-full border rounded-lg px-3 py-2 mt-1" placeholder="Premium Villa Offer">
+              </label>
+              <label>Button / link URL
+                <input x-model="promoAd.link_url" class="w-full border rounded-lg px-3 py-2 mt-1" placeholder="https://example.com">
+              </label>
+              <label class="md:col-span-2">Text
+                <textarea x-model="promoAd.message" rows="3" class="w-full border rounded-lg px-3 py-2 mt-1" placeholder="Limited-time offer or sponsor message"></textarea>
+              </label>
+              <label class="md:col-span-2">Image
+                <input @change="promoImageFile=$event.target.files[0] || null" type="file" accept="image/*" class="w-full border rounded-lg px-3 py-2 mt-1">
+              </label>
+            </div>
+            <div class="flex gap-2 mt-4">
+              <button @click="savePromoAd()" class="bg-[#071f49] text-white px-5 py-2.5 rounded-lg font-semibold">Save Ad</button>
+              <button @click="resetPromoAd()" class="border px-5 py-2.5 rounded-lg">Clear</button>
+            </div>
+          </div>
+
+          <div class="border rounded-xl p-5">
+            <h4 class="font-bold text-lg mb-3">Latest-property ribbon</h4>
+            <label class="block mb-3">Message
+              <input x-model="promoRibbon.message" class="w-full border rounded-lg px-3 py-2 mt-1" placeholder="New plots added in Tellapur — View properties →">
+            </label>
+            <label class="block mb-3">Optional link URL
+              <input x-model="promoRibbon.link_url" class="w-full border rounded-lg px-3 py-2 mt-1" placeholder="https://...">
+            </label>
+            <button @click="savePromoRibbon()" class="bg-[#071f49] text-white px-5 py-2.5 rounded-lg font-semibold">Add Ribbon Message</button>
+          </div>
+        </div>
+
+        <div class="mt-6 grid lg:grid-cols-2 gap-5">
+          <div>
+            <h4 class="font-bold mb-2">Commercial ads</h4>
+            <div class="space-y-2">
+              <template x-for="ad in promoAds" :key="ad.id">
+                <div class="border rounded-lg p-3 flex items-center justify-between gap-3">
+                  <div class="min-w-0"><strong x-text="(ad.side || '').toUpperCase() + ' — ' + (ad.title || 'Untitled ad')"></strong><small class="block text-slate-500" x-text="ad.enabled ? 'Enabled' : 'Disabled'"></small></div>
+                  <div class="flex gap-2 shrink-0">
+                    <button @click="togglePromoAd(ad)" class="border px-2 py-1 rounded text-xs font-semibold" x-text="ad.enabled ? 'Disable' : 'Enable'"></button>
+                    <button @click="deletePromoAd(ad.id)" class="border border-red-200 text-red-600 px-2 py-1 rounded text-xs font-semibold">Delete</button>
+                  </div>
+                </div>
+              </template>
+              <p x-show="!promoAds.length" class="text-sm text-slate-500">No commercial ads yet.</p>
+            </div>
+          </div>
+          <div>
+            <h4 class="font-bold mb-2">Ribbon messages</h4>
+            <div class="space-y-2">
+              <template x-for="item in promoRibbons" :key="item.id">
+                <div class="border rounded-lg p-3 flex items-center justify-between gap-3">
+                  <div class="min-w-0"><strong x-text="item.message"></strong><small class="block text-slate-500" x-text="item.enabled ? 'Enabled' : 'Disabled'"></small></div>
+                  <div class="flex gap-2 shrink-0">
+                    <button @click="togglePromoRibbon(item)" class="border px-2 py-1 rounded text-xs font-semibold" x-text="item.enabled ? 'Disable' : 'Enable'"></button>
+                    <button @click="deletePromoRibbon(item.id)" class="border border-red-200 text-red-600 px-2 py-1 rounded text-xs font-semibold">Delete</button>
+                  </div>
+                </div>
+              </template>
+              <p x-show="!promoRibbons.length" class="text-sm text-slate-500">No ribbon messages yet.</p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -261,13 +385,15 @@
           </div>
 
           <div>
-            <label class="block text-sm font-semibold mb-1">Status</label>
+            <label class="block text-sm font-semibold mb-1">Listing Status</label>
             <select x-model="form.status"
                     class="w-full border rounded-lg px-4 py-3">
               <option value="active">Active</option>
-              <option value="draft">Draft</option>
               <option value="sold">Sold</option>
             </select>
+            <p class="text-xs text-slate-500 mt-1">
+              Public visibility is controlled separately by approval.
+            </p>
           </div>
 
           <div>
@@ -366,6 +492,7 @@
                 <th class="p-4">Location</th>
                 <th class="p-4">Price</th>
                 <th class="p-4">Status</th>
+                <th class="p-4">Approval</th>
                 <th class="p-4">Action</th>
               </tr>
             </thead>
@@ -397,7 +524,24 @@
                           class="px-2 py-1 rounded bg-slate-100"></span>
                   </td>
 
+                  <td class="p-4">
+                    <span x-text="item.approval_status || 'draft'"
+                          class="px-2 py-1 rounded bg-slate-100"></span>
+                  </td>
+
                   <td class="p-4 whitespace-nowrap">
+
+                    <button x-show="(user?.role === 'admin' || user?.role === 'vp') && item.approval_status === 'pending'"
+                            @click="approveProperty(item.id)"
+                            class="text-green-700 font-semibold mr-3">
+                      Approve
+                    </button>
+
+                    <button x-show="(user?.role === 'admin' || user?.role === 'vp') && item.approval_status === 'pending'"
+                            @click="rejectProperty(item.id)"
+                            class="text-orange-700 font-semibold mr-3">
+                      Reject
+                    </button>
 
                     <button x-show="user?.role === 'admin' || user?.role === 'vp' || item.is_mine"
                             @click="editProperty(item)"
@@ -418,7 +562,7 @@
               </template>
 
               <tr x-show="inventory.length === 0">
-                <td colspan="5" class="p-10 text-center text-slate-500">
+                <td colspan="6" class="p-10 text-center text-slate-500">
                   No properties added yet.
                 </td>
               </tr>
@@ -449,6 +593,12 @@ function staffApp() {
     user: null,
     inventory: [],
     staffList: [],
+    promoSettings: { left_ad_enabled:false, right_ad_enabled:false, top_ribbon_enabled:false },
+    promoAds: [],
+    promoRibbons: [],
+    promoAd: { id:null, side:'left', title:'', message:'', image_url:'', link_url:'', enabled:true, display_seconds:5, sort_order:0 },
+    promoRibbon: { id:null, message:'', link_url:'', enabled:true, sort_order:0 },
+    promoImageFile: null,
 
     editing: false,
 
@@ -824,14 +974,22 @@ window.staffApp = function () {
   const app = hatchableStaffApp();
   const sb = getSupabase();
   const fail = error => { if (error) throw error; };
-  const cleanPayload = form => ({
-    title: form.title, property_type: form.property_type, city: form.city, locality: form.locality || null, map_location: form.map_location || null,
-    area_value: form.area_value || null, area_unit: form.area_unit || 'sq.ft', price_value: form.price_value || null,
-    price_unit: form.price_unit || 'total', bedrooms: form.bedrooms || null, description: form.description || null,
-    features: form.features || null, image_urls: app.imageText.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 3),
-    status: form.status || 'active', agent_name: form.agent_name || null, agent_phone: form.agent_phone || null,
-    agent_email: form.agent_email || null, allow_agent_contact: Boolean(form.allow_agent_contact)
-  });
+  const cleanPayload = async form => {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) throw new Error('Your session has expired. Please sign in again.');
+    return {
+      title: form.title, property_type: form.property_type, city: form.city, locality: form.locality || null,
+      map_location: form.map_location || null, area_value: form.area_value || null, area_unit: form.area_unit || 'sq.ft',
+      price_value: form.price_value || null, price_unit: form.price_unit || 'total', bedrooms: form.bedrooms || null,
+      description: form.description || null, features: form.features || null,
+      image_urls: app.imageText.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 3),
+      status: form.status || 'active', agent_name: form.agent_name || null, agent_phone: form.agent_phone || null,
+      agent_email: form.agent_email || null, allow_agent_contact: Boolean(form.allow_agent_contact),
+      ...(form.id
+        ? { approval_status: form.approval_status || 'draft' }
+        : { created_by: user.id, approval_status: this.user?.role === 'agent' ? 'pending' : 'draft' })
+    };
+  }
   app.init = async function () {
     try {
       const { data: { session } } = await sb.auth.getSession();
@@ -840,7 +998,7 @@ window.staffApp = function () {
       if (error || !role) { this.accessDenied = true; return; }
       this.user = { role: role.role, email: session.user.email, name: session.user.user_metadata?.full_name || session.user.email };
       await this.loadInventory();
-      if (this.user.role === 'admin') await this.loadStaff();
+      if (this.user.role === 'admin') { await this.loadStaff(); await this.loadUsers(); await this.loadPromotions(); }
     } catch (e) { this.error = e.message || 'Unable to start the dashboard.'; }
     finally { this.loading = false; }
   };
@@ -861,12 +1019,39 @@ window.staffApp = function () {
     const { data: { user } } = await sb.auth.getUser();
     this.inventory = (data || []).map(row => ({ ...row, is_mine: row.created_by === user?.id }));
   };
+  app.loadUsers = async function () {
+    if (this.user?.role !== 'admin') return;
+    const { data, error } = await sb.from('profiles').select('id,email,display_name').order('email');
+    fail(error);
+    const { data: roles, error: roleError } = await sb.from('staff_roles').select('user_id');
+    fail(roleError);
+    const assigned = new Set((roles || []).map(r => r.user_id));
+    this.registeredUsers = (data || []).filter(u => !assigned.has(u.id));
+  };
+  app.assignSelectedUser = async function () {
+    this.clearMessages();
+    if (this.user?.role !== 'admin') { this.error = 'Only Admin can assign staff roles.'; return; }
+    const selected = this.registeredUsers.find(u => u.id === this.selectedUserId);
+    if (!selected) { this.error = 'Select a registered user first.'; return; }
+    try {
+      const { error } = await sb.rpc('assign_staff', {
+        staff_email: selected.email,
+        desired_role: this.staffRole
+      });
+      fail(error);
+      this.message = `${selected.email} assigned as ${this.staffRole.toUpperCase()}.`;
+      this.selectedUserId = '';
+      await this.loadStaff();
+      await this.loadUsers();
+    } catch (e) { this.error = e.message || 'Unable to assign staff role.'; }
+  };
   app.loadStaff = async function () {
     const { data, error } = await sb.from('staff_roles').select('role, profiles(email)').order('created_at'); fail(error);
     this.staffList = (data || []).map(row => ({ role: row.role, email: row.profiles?.email || '' }));
   };
   app.saveProperty = async function () {
     this.clearMessages();
+    if (!['admin', 'agent'].includes(this.user?.role)) { this.error = 'Only Admin or Agent can add properties.'; return; }
     if (!this.form.title || !this.form.property_type || !this.form.city) { this.error = 'Title, property type and city are required.'; return; }
     const imageUrls = this.imageText.split('\n').map(x => x.trim()).filter(Boolean);
     const uploads = this.imageFiles || [];
@@ -882,9 +1067,23 @@ window.staffApp = function () {
         }
         this.imageText = imageUrls.join('\n');
       }
-      const payload = cleanPayload(this.form);
-      const result = this.form.id ? await sb.from('inventory').update(payload).eq('id', this.form.id) : await sb.from('inventory').insert(payload);
-      fail(result.error); this.message = this.form.id ? 'Property updated successfully.' : 'Property added successfully.';
+      const payload = await cleanPayload(this.form);
+      let result;
+      if (this.form.id) {
+        result = await sb.from('inventory').update(payload).eq('id', this.form.id);
+        fail(result.error);
+        this.message = 'Property updated successfully.';
+      } else {
+        const { data: inserted, error: insertError } = await sb.from('inventory').insert(payload).select('id').single();
+        fail(insertError);
+        if (this.user?.role === 'admin' && inserted?.id) {
+          const { error: approvalError } = await sb.rpc('approve_inventory', { inventory_id: inserted.id });
+          fail(approvalError);
+          this.message = 'Property added and approved successfully.';
+        } else {
+          this.message = 'Property added and sent for approval.';
+        }
+      }
       this.editing = false; this.imageFiles = []; await this.loadInventory();
     } catch (e) { this.error = e.message || 'Unable to save property.'; }
   };
@@ -903,6 +1102,169 @@ window.staffApp = function () {
     try { const { error } = await sb.rpc('remove_staff', { staff_email: email }); fail(error); this.message = 'Staff access removed.'; await this.loadStaff(); }
     catch (e) { this.error = e.message || 'Unable to remove staff.'; }
   };
+  app.signOut = async function () {
+    this.clearMessages();
+    const { error } = await sb.auth.signOut();
+    if (error) {
+      this.error = error.message || 'Unable to sign out.';
+      return;
+    }
+    this.user = null;
+    this.accessDenied = false;
+    this.loginUrl = '#login';
+    this.loginEmail = '';
+    this.loginPassword = '';
+    this.message = 'Signed out. Please sign in with an assigned staff account.';
+  };
+
+  app.submitProperty = async function (id) {
+    this.clearMessages();
+    try {
+      const { error } = await sb.rpc('submit_inventory', { property_id: id });
+      fail(error);
+      this.message = 'Property submitted for approval.';
+      await this.loadInventory();
+    } catch (e) {
+      this.error = e.message || 'Unable to submit property.';
+    }
+  };
+
+  app.approveProperty = async function (id) {
+    if (!confirm('Approve this property for public listing?')) return;
+    this.clearMessages();
+    try {
+      const { error } = await sb.rpc('approve_inventory', { inventory_id: id });
+      fail(error);
+      this.message = 'Property approved. It is now eligible for public listing.';
+      await this.loadInventory();
+    } catch (e) {
+      this.error = e.message || 'Unable to approve property.';
+    }
+  };
+
+  app.rejectProperty = async function (id) {
+    const reason = prompt('Reason for rejection (optional):') || 'Rejected by manager';
+    this.clearMessages();
+    try {
+      const { error } = await sb.rpc('reject_inventory', {
+        inventory_id: id,
+        reason
+      });
+      fail(error);
+      this.message = 'Property rejected.';
+      await this.loadInventory();
+    } catch (e) {
+      this.error = e.message || 'Unable to reject property.';
+    }
+  };
+
+
+  app.loadPromotions = async function () {
+    if (this.user?.role !== 'admin') return;
+    try {
+      const [{ data: settings }, { data: ads }, { data: ribbons }] = await Promise.all([
+        sb.from('site_settings').select('*').eq('id', true).maybeSingle(),
+        sb.from('site_ads').select('*').order('side').order('sort_order'),
+        sb.from('site_ribbon_messages').select('*').order('sort_order')
+      ]);
+      if (settings) this.promoSettings = settings;
+      this.promoAds = ads || [];
+      this.promoRibbons = ribbons || [];
+    } catch (e) { this.error = e.message || 'Unable to load website promotions.'; }
+  };
+
+  app.savePromoSettings = async function () {
+    if (this.user?.role !== 'admin') return;
+    this.clearMessages();
+    try {
+      const { error } = await sb.from('site_settings')
+        .update({
+          left_ad_enabled: !!this.promoSettings.left_ad_enabled,
+          right_ad_enabled: !!this.promoSettings.right_ad_enabled,
+          top_ribbon_enabled: !!this.promoSettings.top_ribbon_enabled
+        })
+        .eq('id', true);
+      fail(error);
+      this.message = 'Website feature settings saved.';
+    } catch (e) { this.error = e.message || 'Unable to save website settings.'; }
+  };
+
+  app.resetPromoAd = function () {
+    this.promoAd = { id:null, side:'left', title:'', message:'', image_url:'', link_url:'', enabled:true, display_seconds:5, sort_order:0 };
+    this.promoImageFile = null;
+  };
+
+  app.savePromoAd = async function () {
+    if (this.user?.role !== 'admin') return;
+    this.clearMessages();
+    if (!this.promoAd.title && !this.promoAd.message && !this.promoImageFile) { this.error = 'Add a title, text or image for the advertisement.'; return; }
+    try {
+      let imageUrl = this.promoAd.image_url || null;
+      if (this.promoImageFile) {
+        const { data: { user } } = await sb.auth.getUser();
+        const safe = this.promoImageFile.name.replace(/[^a-zA-Z0-9._-]/g, '-');
+        const path = `ads/${user.id}/${Date.now()}-${crypto.randomUUID()}-${safe}`;
+        const { error: uploadError } = await sb.storage.from('site-media').upload(path, this.promoImageFile, { upsert:false });
+        fail(uploadError);
+        imageUrl = sb.storage.from('site-media').getPublicUrl(path).data.publicUrl;
+      }
+      const payload = {
+        side: this.promoAd.side,
+        title: this.promoAd.title || null,
+        message: this.promoAd.message || null,
+        image_url: imageUrl,
+        link_url: this.promoAd.link_url || null,
+        enabled: !!this.promoAd.enabled,
+        display_seconds: Math.max(2, Math.min(30, Number(this.promoAd.display_seconds || 5))),
+        sort_order: Number(this.promoAd.sort_order || 0)
+      };
+      const result = this.promoAd.id
+        ? await sb.from('site_ads').update(payload).eq('id', this.promoAd.id)
+        : await sb.from('site_ads').insert(payload);
+      fail(result.error);
+      this.message = this.promoAd.id ? 'Advertisement updated.' : 'Advertisement added.';
+      this.resetPromoAd();
+      await this.loadPromotions();
+    } catch (e) { this.error = e.message || 'Unable to save advertisement.'; }
+  };
+
+  app.togglePromoAd = async function (ad) {
+    try { const { error } = await sb.from('site_ads').update({ enabled: !ad.enabled }).eq('id', ad.id); fail(error); await this.loadPromotions(); }
+    catch (e) { this.error = e.message || 'Unable to change advertisement.'; }
+  };
+
+  app.deletePromoAd = async function (id) {
+    if (!confirm('Delete this advertisement?')) return;
+    try { const { error } = await sb.from('site_ads').delete().eq('id', id); fail(error); this.message = 'Advertisement deleted.'; await this.loadPromotions(); }
+    catch (e) { this.error = e.message || 'Unable to delete advertisement.'; }
+  };
+
+  app.savePromoRibbon = async function () {
+    if (this.user?.role !== 'admin') return;
+    this.clearMessages();
+    if (!this.promoRibbon.message.trim()) { this.error = 'Enter a ribbon message.'; return; }
+    try {
+      const { error } = await sb.from('site_ribbon_messages').insert({
+        message: this.promoRibbon.message.trim(),
+        link_url: this.promoRibbon.link_url || null,
+        enabled: true,
+        sort_order: 0
+      });
+      fail(error); this.message = 'Ribbon message added.'; this.promoRibbon = { id:null, message:'', link_url:'', enabled:true, sort_order:0 }; await this.loadPromotions();
+    } catch (e) { this.error = e.message || 'Unable to add ribbon message.'; }
+  };
+
+  app.togglePromoRibbon = async function (item) {
+    try { const { error } = await sb.from('site_ribbon_messages').update({ enabled: !item.enabled }).eq('id', item.id); fail(error); await this.loadPromotions(); }
+    catch (e) { this.error = e.message || 'Unable to change ribbon message.'; }
+  };
+
+  app.deletePromoRibbon = async function (id) {
+    if (!confirm('Delete this ribbon message?')) return;
+    try { const { error } = await sb.from('site_ribbon_messages').delete().eq('id', id); fail(error); this.message = 'Ribbon message deleted.'; await this.loadPromotions(); }
+    catch (e) { this.error = e.message || 'Unable to delete ribbon message.'; }
+  };
+
   const originalNewProperty = app.newProperty;
   app.newProperty = function () { originalNewProperty.call(this); this.imageFiles = []; };
   return app;
