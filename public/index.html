@@ -1168,6 +1168,52 @@
     font-size:17px !important;
   }
 }
+/* ===== ABOUT + FOOTER FIX ===== */
+
+.about {
+  width: 100% !important;
+  max-width: 1400px !important;
+  margin: 0 auto !important;
+  padding: 60px 5% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 60px !important;
+  box-sizing: border-box !important;
+}
+
+.about > div,
+.about > p {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.about p {
+  margin: 0 !important;
+  line-height: 1.8 !important;
+  overflow-wrap: break-word !important;
+}
+
+footer .footer-brand img {
+  display: block !important;
+  width: 210px !important;
+  height: auto !important;
+  max-height: 120px !important;
+  object-fit: contain !important;
+  object-position: left center !important;
+}
+
+@media (max-width: 800px) {
+  .about {
+    grid-template-columns: 1fr !important;
+    gap: 25px !important;
+    padding: 40px 20px !important;
+  }
+
+  footer .footer-brand img {
+    width: 200px !important;
+    max-height: 120px !important;
+  }
+}
 </style>
 
 </head>
@@ -1273,7 +1319,7 @@
     <div id="rightAdBox" class="side-ad-box"></div>
   </aside>
 </div>
-<footer id="contact"><div class="footer-brand"><img src="/logo.svg" alt="I Realty Technologies"><p>I Realty Technologies Pvt. Ltd.</p></div><div><strong>Contact</strong><a href="tel:+916300181062">+91 6300181062</a><a href="https://wa.me/916300181062">WhatsApp us</a></div><div><strong>Markets</strong><span>Hyderabad</span><span>Bangalore</span><span>Delhi</span></div></footer>
+<footer id="contact"><div class="footer-brand"><img src="logo-footer.svg" alt="I Realty Technologies"><p>I Realty Technologies Pvt. Ltd.</p></div><div><strong>Contact</strong><a href="tel:+916300181062">+91 6300181062</a><a href="https://wa.me/916300181062">WhatsApp us</a></div><div><strong>Markets</strong><span>Hyderabad</span><span>Bangalore</span><span>Delhi</span></div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="supabase-client.js"></script>
@@ -1570,3 +1616,4 @@ loadPromotions();
 load();
 </script>
 </body></html>
+
