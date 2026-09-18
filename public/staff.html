@@ -99,7 +99,7 @@
           </p>
         </div>
 
-        <button x-show="user?.role === 'admin' || user?.role === 'agent'" @click="newProperty()"
+        <button x-show="['admin','vp','agent'].includes(user?.role)" @click="newProperty()"
                 class="bg-[#c99a28] hover:bg-[#b88a1f] text-white px-5 py-3 rounded-lg font-semibold">
           + Add Property
         </button>
@@ -987,7 +987,7 @@ window.staffApp = function () {
       agent_email: form.agent_email || null, allow_agent_contact: Boolean(form.allow_agent_contact),
       ...(form.id
         ? { approval_status: form.approval_status || 'draft' }
-        : { created_by: user.id, approval_status: this.user?.role === 'agent' ? 'pending' : 'draft' })
+        : { created_by: user.id, approval_status: app.user?.role === 'agent' ? 'pending' : 'draft' })
     };
   }
   app.init = async function () {
@@ -1051,7 +1051,7 @@ window.staffApp = function () {
   };
   app.saveProperty = async function () {
     this.clearMessages();
-    if (!['admin', 'agent'].includes(this.user?.role)) { this.error = 'Only Admin or Agent can add properties.'; return; }
+    if (!['admin', 'vp', 'agent'].includes(this.user?.role)) { this.error = 'Only Admin, VP or Agent can add properties.'; return; }
     if (!this.form.title || !this.form.property_type || !this.form.city) { this.error = 'Title, property type and city are required.'; return; }
     const imageUrls = this.imageText.split('\n').map(x => x.trim()).filter(Boolean);
     const uploads = this.imageFiles || [];
@@ -1076,7 +1076,7 @@ window.staffApp = function () {
       } else {
         const { data: inserted, error: insertError } = await sb.from('inventory').insert(payload).select('id').single();
         fail(insertError);
-        if (this.user?.role === 'admin' && inserted?.id) {
+        if (['admin', 'vp'].includes(this.user?.role) && inserted?.id) {
           const { error: approvalError } = await sb.rpc('approve_inventory', { inventory_id: inserted.id });
           fail(approvalError);
           this.message = 'Property added and approved successfully.';
