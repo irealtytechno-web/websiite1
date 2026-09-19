@@ -1329,6 +1329,28 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({
   '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
 }[m]));
 
+// Format prices using Indian denominations. Values are assumed to be in rupees.
+function formatPrice(value) {
+  const amount = Number(String(value ?? '').replace(/[₹,\\s]/g, ''));
+  if (!Number.isFinite(amount)) return String(value ?? '');
+
+  const compact = n => Number(n.toFixed(2)).toLocaleString('en-IN', {
+    maximumFractionDigits: 2
+  });
+
+  if (amount >= 10000000) return `${compact(amount / 10000000)} Cr`;
+
+  if (amount >= 100000) {
+    const lakhs = Math.floor(amount / 100000);
+    const remainder = Math.round(amount - lakhs * 100000);
+    const thousands = Math.floor(remainder / 1000);
+    const rupees = remainder % 1000;
+    return `${lakhs} Lakh${thousands ? ` ${thousands} Thousand` : ''}${rupees ? ` ${rupees}` : ''}`;
+  }
+
+  return Math.round(amount).toLocaleString('en-IN');
+}
+
 const sb = getSupabase();
 let currentProperties = [];
 
@@ -1365,7 +1387,7 @@ function openProperty(id) {
       ${maps}
       <div class="detail-grid">
         ${p.area_value ? `<div class="detail-item"><small>Area</small><strong>${esc(p.area_value)} ${esc(p.area_unit || 'sq.ft')}</strong></div>` : ''}
-        ${p.price_value ? `<div class="detail-item"><small>Price</small><strong>₹ ${esc(p.price_value)} ${esc(p.price_unit || '')}</strong></div>` : ''}
+        ${p.price_value ? `<div class="detail-item"><small>Price</small><strong>₹ ${esc(formatPrice(p.price_value))} ${esc(p.price_unit || '')}</strong></div>` : ''}
         ${p.bedrooms ? `<div class="detail-item"><small>Bedrooms</small><strong>${esc(p.bedrooms)}</strong></div>` : ''}
         <div class="detail-item"><small>Location</small><strong>${esc(p.locality || p.city)}</strong></div>
       </div>
@@ -1556,7 +1578,7 @@ async function load() {
             ${href ? `<a class="map-link" href="${esc(href)}" target="_blank" rel="noopener">View on Google Maps ↗</a>` : ''}
             <div class="property-meta">
               ${p.area_value ? `<span>${esc(p.area_value)} ${esc(p.area_unit || 'sq.ft')}</span>` : ''}
-              ${p.price_value ? `<strong>₹ ${esc(p.price_value)} ${esc(p.price_unit || '')}</strong>` : ''}
+              ${p.price_value ? `<strong>₹ ${esc(formatPrice(p.price_value))} ${esc(p.price_unit || '')}</strong>` : ''}
             </div>
             <div class="property-actions">
               <button type="button" class="more-details" onclick="openProperty('${esc(p.id)}')">More Details</button>
