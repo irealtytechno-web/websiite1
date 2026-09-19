@@ -633,6 +633,36 @@
     }
   }
 
+
+/* Positive social-proof badge for properties marked as sold out */
+.property-image { position: relative; }
+.property-sold-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  background: #f2b705;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: .6px;
+  line-height: 1;
+  box-shadow: 0 3px 10px rgba(0,0,0,.2);
+}
+.property-sold-badge::before { content: ""; }
+.property.is-sold-out .property-image img { filter: saturate(.72); }
+.property-sold-note {
+  margin: 6px 0 0 !important;
+  color: #166534 !important;
+  font-size: 11px !important;
+  font-weight: 650;
+}
+
 </style>
 
 
@@ -1561,9 +1591,17 @@ async function load() {
 
     box.innerHTML = currentProperties.map(p => {
       const href = mapHref(p.map_location);
+      const status = String(p.status || '').trim().toLowerCase();
+      const soldText = [
+        p.availability_status, p.listing_status, p.title, p.description
+      ].filter(Boolean).join(' ').toLowerCase();
+      const soldOut = status === 'sold' ||
+        p.is_sold_out === true || p.sold_out === true ||
+        /\b(sold\s*out|successfully\s*sold|sold)\b/.test(soldText);
       return `
-        <article class="property">
+        <article class="property${soldOut ? ' is-sold-out' : ''}">
           <div class="property-image">
+            ${soldOut ? '<span class="property-sold-badge">SOLD OUT</span>' : ''}
             ${p.image_url
               ? `<img src="${esc(p.image_url)}" alt="${esc(p.title)}">`
               : '<span>PROPERTY</span>'}
@@ -1575,6 +1613,7 @@ async function load() {
             </div>
             <h3>${esc(p.title)}</h3>
             <p>${esc(p.locality || 'Location details available on enquiry')}</p>
+            ${soldOut ? '<p class="property-sold-note">This property has been sold. Explore our other available properties.</p>' : ''}
             ${href ? `<a class="map-link" href="${esc(href)}" target="_blank" rel="noopener">View on Google Maps ↗</a>` : ''}
             <div class="property-meta">
               ${p.area_value ? `<span>${esc(p.area_value)} ${esc(p.area_unit || 'sq.ft')}</span>` : ''}
