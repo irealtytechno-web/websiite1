@@ -13,24 +13,44 @@
   .more-details,.contact-property{flex:1 1 150px;text-align:center;display:inline-flex;align-items:center;justify-content:center;min-height:42px;border-radius:10px;font-weight:700;text-decoration:none;cursor:pointer}
   .more-details{border:1px solid #0b3d82;color:#0b3d82;background:#fff}
   .contact-property{background:#f1f5fb;color:#073b80;border:0}
-  .property-modal-backdrop{position:fixed;inset:0;background:rgba(7,31,73,.62);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+  .property-modal-backdrop{position:fixed;inset:0;background:rgba(7,31,73,.62);z-index:1000;display:none;align-items:center;justify-content:center;padding:12px}
   .property-modal-backdrop.open{display:flex}
-  .property-modal{background:#fff;width:min(900px,100%);max-height:90vh;overflow:auto;border-radius:18px;box-shadow:0 25px 70px rgba(0,0,0,.25)}
-  .property-modal-head{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid #e5eaf1}
-  .property-modal-close{border:0;background:#f1f5f9;border-radius:10px;width:40px;height:40px;font-size:20px;cursor:pointer}
-  .property-modal-content{padding:22px}
-  .property-modal-image{width:100%;max-height:420px;object-fit:cover;border-radius:14px;background:#f1f5f9}
-  .detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
-  .detail-item{background:#f8fafc;border-radius:10px;padding:12px}
-  .detail-item small{display:block;color:#64748b;margin-bottom:4px}
-  .lead-card{margin-top:20px;padding:20px;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc}
-  .lead-card h4{margin:0 0 6px}
-  .lead-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
-  .lead-form label{font-weight:600;font-size:14px}
-  .lead-form input,.lead-form select,.lead-form textarea{width:100%;margin-top:5px;border:1px solid #cbd5e1;border-radius:9px;padding:11px 12px;background:#fff}
+  .property-modal{background:#fff;width:min(1100px,100%);height:min(94vh,820px);overflow:hidden;border-radius:18px;box-shadow:0 25px 70px rgba(0,0,0,.25);display:flex;flex-direction:column}
+  .property-modal-head{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid #e5eaf1;flex:0 0 auto}
+  .property-modal-close{border:0;background:#f1f5f9;border-radius:10px;width:42px;height:42px;font-size:22px;font-weight:700;cursor:pointer;display:grid;place-items:center}
+  .property-modal-content{padding:16px 20px 18px;overflow:hidden;flex:1;min-height:0}
+  .property-modal-image{width:100%;height:260px;object-fit:cover;border-radius:14px;background:#f1f5f9;display:block}
+  .property-modal-content > div[style]{margin-top:10px !important}
+  .property-modal-content .property-top{margin-bottom:0}
+  .property-modal-content h2{font-size:28px;line-height:1.15;margin:5px 0 !important}
+  .property-modal-content > div > p{margin:4px 0 7px}
+  .property-modal-content .map-link{font-size:13px}
+  .detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+  .detail-item{background:#f8fafc;border-radius:10px;padding:9px 12px;min-height:58px}
+  .detail-item small{display:block;color:#64748b;margin-bottom:3px;font-size:12px}
+  .detail-item strong{font-size:15px}
+  .property-modal-content h4{margin:7px 0 2px}
+  .property-modal-content > div > div:not(.detail-grid) p{margin:0;font-size:13px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .lead-card{margin-top:10px;padding:12px 14px;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc}
+  .lead-card h4{margin:0 0 3px;font-size:18px}
+  .lead-card > div:not(.form-message){font-size:13px}
+  .lead-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+  .lead-form label{font-weight:600;font-size:12px}
+  .lead-form input,.lead-form select,.lead-form textarea{width:100%;height:38px;margin-top:3px;border:1px solid #cbd5e1;border-radius:8px;padding:7px 10px;background:#fff;font-size:13px}
   .lead-form .full{grid-column:1/-1}
-  .lead-submit{grid-column:1/-1;border:0;border-radius:10px;background:#0b3d82;color:#fff;padding:13px 16px;font-weight:700;cursor:pointer}
-  .lead-note{font-size:13px;color:#64748b;margin-top:7px}
+  .lead-submit{grid-column:1/-1;border:0;border-radius:8px;background:#0b3d82;color:#fff;height:38px;padding:7px 16px;font-weight:700;cursor:pointer}
+  .lead-note{font-size:12px;color:#64748b;margin-top:5px}
+  @media(max-width:760px){
+    .property-modal-backdrop{padding:6px}
+    .property-modal{height:96vh;border-radius:14px}
+    .property-modal-head{padding:10px 14px}
+    .property-modal-content{padding:10px 14px 14px;overflow:auto}
+    .property-modal-image{height:190px}
+    .property-modal-content h2{font-size:23px}
+    .detail-grid{grid-template-columns:1fr 1fr;gap:6px}
+    .lead-form{grid-template-columns:1fr}
+    .lead-form .full,.lead-submit{grid-column:auto}
+  }
   .request-section{margin:28px 0 0;padding:28px;border-radius:18px;background:#071f49;color:#fff}
   .request-section h3{margin:0 0 7px}
   .request-section p{margin:0;color:#dbeafe}
@@ -1246,6 +1266,557 @@ footer .footer-brand img {
 }
 </style>
 
+
+<style id="compact-request-section-final">
+/* ===== FINAL COMPACT PROPERTY REQUEST BOX ===== */
+/* Desktop layout:
+   Name | Phone
+   Property Type | Location
+   Budget | Requirement
+   Find My Property
+*/
+.request-section {
+  margin: 14px 0 0 !important;
+  padding: 16px 20px !important;
+  border-radius: 14px !important;
+}
+
+.request-section h3 {
+  font-size: 20px !important;
+  line-height: 1.18 !important;
+  margin: 0 0 3px !important;
+}
+
+.request-section > p {
+  font-size: 12px !important;
+  line-height: 1.25 !important;
+  margin: 0 !important;
+}
+
+.request-form {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 7px 14px !important;
+  margin-top: 10px !important;
+  align-items: end !important;
+}
+
+.request-form label {
+  display: block !important;
+  font-size: 11px !important;
+  line-height: 1.15 !important;
+  font-weight: 700 !important;
+}
+
+.request-form input,
+.request-form select {
+  width: 100% !important;
+  height: 34px !important;
+  margin-top: 3px !important;
+  padding: 6px 9px !important;
+  font-size: 12px !important;
+  border-radius: 8px !important;
+}
+
+.request-form textarea {
+  width: 100% !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  margin-top: 3px !important;
+  padding: 6px 9px !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  border-radius: 8px !important;
+  resize: none !important;
+}
+
+.request-form .full {
+  grid-column: auto !important;
+}
+
+.request-submit {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  height: 36px !important;
+  padding: 7px 14px !important;
+  font-size: 13px !important;
+  margin-top: 1px !important;
+  border-radius: 8px !important;
+}
+
+.form-message {
+  font-size: 11px !important;
+  margin-top: 4px !important;
+}
+
+@media (max-width: 760px) {
+  .request-section {
+    padding: 15px !important;
+    margin-top: 12px !important;
+  }
+
+  .request-section h3 {
+    font-size: 18px !important;
+  }
+
+  .request-section > p {
+    font-size: 12px !important;
+  }
+
+  .request-form {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    margin-top: 10px !important;
+  }
+
+  .request-form .full {
+    grid-column: auto !important;
+  }
+
+  .request-submit {
+    grid-column: auto !important;
+  }
+
+  .request-form input,
+  .request-form select {
+    height: 38px !important;
+    font-size: 13px !important;
+  }
+
+  .request-form textarea {
+    height: 44px !important;
+    min-height: 44px !important;
+  }
+}
+</style>
+
+
+<style id="final-request-trust-spacing">
+/* ===== FINAL: TIGHT REQUEST BOX + TRUST STRIP SPACING ===== */
+.request-section{
+  margin-bottom: 0 !important;
+}
+
+/* Remove the large bottom padding inherited from the hero section */
+.site-layout .hero{
+  padding-bottom: 0 !important;
+}
+
+/* Pull the trust statistics close to the request box */
+.trust-strip{
+  margin-top: 0 !important;
+  padding-top: 8px !important;
+  padding-bottom: 18px !important;
+}
+
+/* Make the request confirmation clearly visible on the dark blue box */
+#requestMessage{
+  color: #f7d36a !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  margin-top: 4px !important;
+  min-height: 15px !important;
+}
+
+@media (max-width: 760px){
+  .site-layout .hero{
+    padding-bottom: 0 !important;
+  }
+
+  .trust-strip{
+    padding-top: 6px !important;
+    padding-bottom: 14px !important;
+  }
+
+  #requestMessage{
+    font-size: 12px !important;
+  }
+}
+</style>
+
+
+<style id="property-modal-single-screen-v4">
+/* ===== PROPERTY DETAILS: SINGLE-SCREEN COMPACT LAYOUT ===== */
+.property-modal{
+  width:min(1080px,96vw) !important;
+  height:min(90vh,760px) !important;
+  max-height:90vh !important;
+}
+
+.property-modal-head{
+  padding:10px 18px !important;
+  min-height:54px !important;
+}
+
+.property-modal-head strong{
+  font-size:20px !important;
+}
+
+.property-modal-close{
+  width:38px !important;
+  height:38px !important;
+  font-size:20px !important;
+}
+
+.property-modal-content{
+  padding:10px 18px 12px !important;
+  overflow:hidden !important;
+}
+
+.property-modal-image{
+  height:165px !important;
+  border-radius:12px !important;
+  object-fit:cover !important;
+}
+
+.property-modal-content > div[style]{
+  margin-top:7px !important;
+}
+
+.property-modal-content h2{
+  font-size:24px !important;
+  line-height:1.1 !important;
+  margin:3px 0 !important;
+}
+
+.property-modal-content > div > p{
+  margin:2px 0 5px !important;
+  font-size:14px !important;
+}
+
+.property-modal-content .map-link{
+  font-size:12px !important;
+}
+
+.detail-grid{
+  gap:6px !important;
+  margin:7px 0 !important;
+}
+
+.detail-item{
+  min-height:46px !important;
+  padding:6px 10px !important;
+  border-radius:8px !important;
+}
+
+.detail-item small{
+  margin-bottom:1px !important;
+  font-size:10px !important;
+}
+
+.detail-item strong{
+  font-size:13px !important;
+}
+
+.property-modal-content h4{
+  margin:4px 0 1px !important;
+  font-size:14px !important;
+}
+
+.property-modal-content > div > div:not(.detail-grid) p{
+  font-size:11px !important;
+  line-height:1.2 !important;
+  -webkit-line-clamp:1 !important;
+}
+
+.lead-card{
+  margin-top:7px !important;
+  padding:9px 11px !important;
+  border-radius:10px !important;
+}
+
+.lead-card h4{
+  font-size:15px !important;
+  margin:0 0 2px !important;
+}
+
+.lead-card > div:not(.form-message){
+  font-size:11px !important;
+}
+
+.lead-form{
+  gap:6px 10px !important;
+  margin-top:6px !important;
+}
+
+.lead-form label{
+  font-size:10px !important;
+}
+
+.lead-form input,
+.lead-form select,
+.lead-form textarea{
+  height:32px !important;
+  margin-top:2px !important;
+  padding:5px 8px !important;
+  font-size:11px !important;
+  border-radius:7px !important;
+}
+
+.lead-submit{
+  height:34px !important;
+  padding:6px 12px !important;
+  font-size:12px !important;
+  border-radius:7px !important;
+}
+
+.form-message{
+  font-size:11px !important;
+  margin-top:3px !important;
+}
+
+/* Desktop: no internal scrolling */
+@media (min-width:761px){
+  .property-modal-content{
+    overflow:hidden !important;
+  }
+}
+
+/* Mobile: preserve usability if the physical screen is too short */
+@media (max-width:760px){
+  .property-modal{
+    width:98vw !important;
+    height:94vh !important;
+    max-height:94vh !important;
+  }
+
+  .property-modal-content{
+    padding:8px 12px 10px !important;
+    overflow:auto !important;
+  }
+
+  .property-modal-image{
+    height:125px !important;
+  }
+
+  .property-modal-content h2{
+    font-size:20px !important;
+  }
+
+  .detail-grid{
+    grid-template-columns:1fr 1fr !important;
+  }
+
+  .lead-form{
+    grid-template-columns:1fr 1fr !important;
+  }
+
+  .lead-submit{
+    grid-column:1 / -1 !important;
+  }
+}
+</style>
+
+
+<style id="property-modal-final-v5">
+/* ===== PROPERTY DETAILS V5: SHOW FULL IMAGE + FIT COMPLETE CONTENT ===== */
+
+/* Keep the dialog compact and keep the close button visible */
+.property-modal{
+  width:min(1080px,96vw) !important;
+  height:min(91vh,760px) !important;
+  max-height:91vh !important;
+}
+
+/* Compact header */
+.property-modal-head{
+  padding:8px 16px !important;
+  min-height:48px !important;
+}
+
+.property-modal-head strong{
+  font-size:19px !important;
+}
+
+.property-modal-close{
+  width:36px !important;
+  height:36px !important;
+  font-size:19px !important;
+}
+
+/* Compact content */
+.property-modal-content{
+  padding:8px 16px 10px !important;
+  overflow:hidden !important;
+}
+
+/* IMPORTANT: show the COMPLETE uploaded image.
+   "contain" prevents cropping regardless of image aspect ratio. */
+.property-modal-image{
+  width:100% !important;
+  height:112px !important;
+  object-fit:contain !important;
+  object-position:center !important;
+  background:#f3f6fa !important;
+  border-radius:10px !important;
+}
+
+/* Property heading area */
+.property-modal-content > div[style]{
+  margin-top:4px !important;
+}
+
+.property-modal-content .property-top{
+  margin-bottom:0 !important;
+  font-size:10px !important;
+}
+
+.property-modal-content h2{
+  font-size:22px !important;
+  line-height:1.05 !important;
+  margin:2px 0 !important;
+}
+
+.property-modal-content > div > p{
+  margin:1px 0 3px !important;
+  font-size:12px !important;
+}
+
+.property-modal-content .map-link{
+  font-size:11px !important;
+}
+
+/* Details */
+.detail-grid{
+  gap:5px !important;
+  margin:5px 0 !important;
+}
+
+.detail-item{
+  min-height:39px !important;
+  padding:5px 9px !important;
+  border-radius:7px !important;
+}
+
+.detail-item small{
+  margin-bottom:0 !important;
+  font-size:9px !important;
+}
+
+.detail-item strong{
+  font-size:12px !important;
+  line-height:1.1 !important;
+}
+
+/* Description / features: compact, never allowed to push enquiry below screen */
+.property-modal-content h4{
+  margin:3px 0 0 !important;
+  font-size:12px !important;
+}
+
+.property-modal-content > div > div:not(.detail-grid) p{
+  margin:0 !important;
+  font-size:10px !important;
+  line-height:1.15 !important;
+  -webkit-line-clamp:1 !important;
+}
+
+/* Enquiry card */
+.lead-card{
+  margin-top:5px !important;
+  padding:7px 9px !important;
+  border-radius:8px !important;
+}
+
+.lead-card h4{
+  font-size:13px !important;
+  margin:0 !important;
+}
+
+.lead-card > div:not(.form-message){
+  font-size:10px !important;
+  line-height:1.15 !important;
+  margin-top:1px !important;
+}
+
+/* Desktop: Name | Phone | Button on ONE row */
+@media (min-width:761px){
+  .lead-form{
+    display:grid !important;
+    grid-template-columns:1fr 1fr 180px !important;
+    align-items:end !important;
+    gap:5px 8px !important;
+    margin-top:5px !important;
+  }
+
+  .lead-form label{
+    font-size:9px !important;
+    line-height:1.05 !important;
+  }
+
+  .lead-form input,
+  .lead-form select,
+  .lead-form textarea{
+    height:29px !important;
+    margin-top:2px !important;
+    padding:4px 7px !important;
+    font-size:10px !important;
+    border-radius:6px !important;
+  }
+
+  .lead-submit{
+    height:29px !important;
+    padding:4px 8px !important;
+    font-size:11px !important;
+    border-radius:6px !important;
+    margin:0 !important;
+  }
+
+  .form-message{
+    font-size:10px !important;
+    margin-top:2px !important;
+  }
+}
+
+/* Mobile: keep all fields usable */
+@media (max-width:760px){
+  .property-modal{
+    width:98vw !important;
+    height:94vh !important;
+    max-height:94vh !important;
+  }
+
+  .property-modal-content{
+    padding:7px 10px 9px !important;
+    overflow:auto !important;
+  }
+
+  .property-modal-image{
+    height:115px !important;
+    object-fit:contain !important;
+  }
+
+  .property-modal-content h2{
+    font-size:20px !important;
+  }
+
+  .detail-grid{
+    grid-template-columns:1fr 1fr !important;
+  }
+
+  .lead-card{
+    margin-top:5px !important;
+    padding:7px 8px !important;
+  }
+
+  .lead-form{
+    gap:5px !important;
+    margin-top:5px !important;
+  }
+
+  .lead-form input{
+    height:32px !important;
+    font-size:11px !important;
+  }
+
+  .lead-submit{
+    height:33px !important;
+    font-size:11px !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <header class="site-header">
@@ -1391,7 +1962,11 @@ function phoneIsValid(phone) {
 function setMessage(id, text, ok = true) {
   const el = document.getElementById(id);
   el.textContent = text;
-  el.style.color = ok ? '#166534' : '#b91c1c';
+  if (id === 'requestMessage') {
+    el.style.color = ok ? '#f7d36a' : '#ffb4b4';
+  } else {
+    el.style.color = ok ? '#166534' : '#b91c1c';
+  }
 }
 
 function openProperty(id) {
