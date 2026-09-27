@@ -437,7 +437,15 @@
             <label class="block text-sm font-semibold mb-1">
               Property images (maximum 3)
             </label>
-            <input @change="imageFiles=Array.from($event.target.files)" type="file" accept="image/*" multiple class="w-full border rounded-lg px-4 py-3 mb-3">
+            <input
+              @change="imageFiles=Array.from($event.target.files); clearMessages()"
+              type="file"
+              accept="image/*"
+              multiple
+              class="w-full border rounded-lg px-4 py-3 mb-3">
+            <p x-show="imageFiles.length"
+               class="text-xs text-slate-600 mb-3"
+               x-text="imageFiles.length + ' image' + (imageFiles.length === 1 ? '' : 's') + ' selected. Maximum 3.'"></p>
             <textarea x-model="imageText"
                       rows="3"
                       class="w-full border rounded-lg px-4 py-3"
@@ -1137,42 +1145,177 @@ window.staffApp = function () {
   };
   app.saveProperty = async function () {
     this.clearMessages();
-    if (!['admin', 'vp', 'agent'].includes(this.user?.role)) { this.error = 'Only Admin, VP or Agent can add properties.'; return; }
-    if (!this.form.title || !this.form.property_type || !this.form.city) { this.error = 'Title, property type and city are required.'; return; }
-    const imageUrls = this.imageText.split('\n').map(x => x.trim()).filter(Boolean);
-    const uploads = this.imageFiles || [];
-    if (imageUrls.length + uploads.length > 3) { this.error = 'A property can have a maximum of 3 images in total.'; return; }
+
+    if (!['admin', 'vp', 'agent'].includes(this.user?.role)) {
+      this.error = 'Only Admin, VP or Agent can add properties.';
+      return;
+    }
+
+    if (!this.form.title || !this.form.property_type || !this.form.city) {
+      this.error = 'Title, property type and city are required.';
+      return;
+    }
+
+    /*
+      imageText = existing/manual URLs
+      imageFiles = files selected from the computer
+
+      We combine both into ONE array and save that array to
+      inventory.image_urls. Maximum = 3 images total.
+    */
+    let imageUrls = this.imageText
+      .split('\n')
+      .map(x => x.trim())
+      .filter(Boolean)
+      .slice(0, 3);
+
+    const uploads = Array.from(this.imageFiles || []);
+
+    if (imageUrls.length + uploads.length > 3) {
+      this.error =
+        `A property can have a maximum of 3 images. ` +
+        `You currently have ${imageUrls.length + uploads.length} selected.`;
+      return;
+    }
+
     try {
-      if (uploads.length) {
-        const { data: { user } } = await sb.auth.getUser();
-        for (const file of uploads) {
-          const path = `${user.id}/${Date.now()}-${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
-          const { error: uploadError } = await sb.storage.from('property-images').upload(path, file, { upsert: false });
-          fail(uploadError);
-          imageUrls.push(sb.storage.from('property-images').getPublicUrl(path).data.publicUrl);
-        }
-        this.imageText = imageUrls.join('\n');
+      const {
+        data: { user }
+      } = await sb.auth.getUser();
+
+      if (!user) {
+        throw new Error(
+          'Your session has expired. Please sign in again.'
+        );
       }
+
+      /*
+        Upload every selected image to Supabase Storage.
+        Each uploaded file gets its own public URL.
+      */
+      for (const file of uploads) {
+        if (!file.type.startsWith('image/')) {
+          throw new Error(`${file.name} is not an image file.`);
+        }
+
+        const safeName = file.name.replace(
+          /[^a-zA-Z0-9._-]/g,
+          '-'
+        );
+
+        const path =
+          `${user.id}/${Date.now()}-${crypto.randomUUID()}-${safeName}`;
+
+        const {
+          error: uploadError
+        } = await sb.storage
+          .from('property-images')
+          .upload(path, file, {
+            upsert: false
+          });
+
+        fail(uploadError);
+
+        const {
+          data: publicData
+        } = sb.storage
+          .from('property-images')
+          .getPublicUrl(path);
+
+        const publicUrl = publicData?.publicUrl;
+
+        if (!publicUrl) {
+          throw new Error(
+            `Unable to create public URL for ${file.name}.`
+          );
+        }
+
+        imageUrls.push(publicUrl);
+      }
+
+      /*
+        Keep exactly the URLs that will be saved.
+        This also makes edit + upload work correctly.
+      */
+      imageUrls = imageUrls.slice(0, 3);
+      this.imageText = imageUrls.join('\n');
+
+      console.log(
+        'Property images being saved:',
+        imageUrls
+      );
+
       const payload = await cleanPayload(this.form);
+
       let result;
+
       if (this.form.id) {
-        result = await sb.from('inventory').update(payload).eq('id', this.form.id);
+
+        result = await sb
+          .from('inventory')
+          .update(payload)
+          .eq('id', this.form.id);
+
         fail(result.error);
-        this.message = 'Property updated successfully.';
+
+        this.message =
+          imageUrls.length > 1
+            ? `Property updated with ${imageUrls.length} images.`
+            : 'Property updated successfully.';
+
       } else {
-        const { data: inserted, error: insertError } = await sb.from('inventory').insert(payload).select('id').single();
+
+        const {
+          data: inserted,
+          error: insertError
+        } = await sb
+          .from('inventory')
+          .insert(payload)
+          .select('id')
+          .single();
+
         fail(insertError);
-        if (['admin', 'vp'].includes(this.user?.role) && inserted?.id) {
-          const { error: approvalError } = await sb.rpc('approve_inventory', { inventory_id: inserted.id });
+
+        if (
+          ['admin', 'vp'].includes(this.user?.role) &&
+          inserted?.id
+        ) {
+          const {
+            error: approvalError
+          } = await sb.rpc(
+            'approve_inventory',
+            {
+              inventory_id: inserted.id
+            }
+          );
+
           fail(approvalError);
-          this.message = 'Property added and approved successfully.';
+
+          this.message =
+            imageUrls.length > 1
+              ? `Property added and approved with ${imageUrls.length} images.`
+              : 'Property added and approved successfully.';
         } else {
-          this.message = 'Property added and sent for approval.';
+          this.message =
+            imageUrls.length > 1
+              ? `Property added with ${imageUrls.length} images and sent for approval.`
+              : 'Property added and sent for approval.';
         }
       }
-      this.editing = false; this.imageFiles = []; await this.loadInventory();
-    } catch (e) { this.error = e.message || 'Unable to save property.'; }
+
+      this.editing = false;
+      this.imageFiles = [];
+
+      await this.loadInventory();
+
+    } catch (e) {
+      console.error('Property save error:', e);
+
+      this.error =
+        e.message || 'Unable to save property.';
+    }
   };
+
   app.deleteProperty = async function (id) {
     if (!confirm('Delete this property?')) return; this.clearMessages();
     try { const { error } = await sb.from('inventory').delete().eq('id', id); fail(error); this.message = 'Property deleted.'; await this.loadInventory(); }

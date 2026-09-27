@@ -1817,6 +1817,39 @@ footer .footer-brand img {
 }
 </style>
 
+<style id="property-gallery-v6">
+/* ===== V6 PROPERTY GALLERY + FULL DESCRIPTION ===== */
+.property-gallery{position:relative;height:125px;border-radius:12px;background:#f3f6fa;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.gallery-main{border:0;padding:0;background:transparent;width:100%;height:100%;cursor:zoom-in;display:flex;align-items:center;justify-content:center}
+.property-modal-image{height:100% !important;width:100% !important;object-fit:contain !important;border-radius:12px !important;background:#f3f6fa}
+.gallery-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:32px;height:32px;border:0;border-radius:50%;background:rgba(7,31,73,.82);color:#fff;font-size:24px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.gallery-nav[hidden]{display:none}
+.gallery-prev{left:8px}.gallery-next{right:8px}
+.gallery-dots{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);display:flex;gap:5px;padding:4px 7px;border-radius:20px;background:rgba(0,0,0,.35)}
+.gallery-dot{width:7px;height:7px;padding:0;border:0;border-radius:50%;background:#fff;opacity:.55;cursor:pointer}.gallery-dot.active{opacity:1;transform:scale(1.2)}
+.gallery-count{position:absolute;right:9px;bottom:8px;background:rgba(7,31,73,.78);color:#fff;border-radius:12px;padding:3px 7px;font-size:9px;font-weight:800}
+.property-gallery-empty{height:125px;display:grid;place-items:center;color:#64748b;font-size:12px}
+.property-modal-main-info h2{font-size:22px !important;line-height:1.08 !important;margin:2px 0 !important}
+.property-modal-main-info > p{font-size:12px;margin:1px 0 3px !important}
+.property-modal-main-info .map-link{font-size:11px}
+.property-text-row{display:flex;align-items:center;gap:8px;margin-top:3px}
+.property-text-row > div{min-width:0;flex:1}
+.property-text-row h4{font-size:11px !important;margin:2px 0 0 !important}
+.property-text-row p{font-size:10px !important;line-height:1.15 !important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0 !important}
+.read-more-btn{flex:0 0 auto;border:0;background:transparent;color:#0758ae;font-size:9px;font-weight:800;padding:2px 0;cursor:pointer;white-space:nowrap}
+.property-image-viewer,.property-description-viewer{position:fixed;inset:0;background:rgba(3,14,34,.88);z-index:3000;display:none;align-items:center;justify-content:center;padding:20px}
+.property-image-viewer.open,.property-description-viewer.open{display:flex}
+.property-image-viewer img{max-width:92vw;max-height:84vh;width:auto;height:auto;object-fit:contain;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.property-image-viewer-close,.property-image-viewer-nav{position:absolute;border:0;border-radius:50%;background:#fff;color:#073b80;cursor:pointer;font-weight:900;display:grid;place-items:center;z-index:2}
+.property-image-viewer-close{top:18px;right:22px;width:42px;height:42px;font-size:25px}.property-image-viewer-nav{top:50%;transform:translateY(-50%);width:48px;height:48px;font-size:36px}.property-image-viewer-nav.prev{left:20px}.property-image-viewer-nav.next{right:20px}
+.property-image-viewer-count{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,.55);padding:5px 10px;border-radius:15px;font-size:11px;font-weight:800}
+.property-description-card{width:min(760px,92vw);max-height:80vh;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.property-description-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e5eaf1;color:#10213b}.property-description-head button{border:0;background:#f1f5f9;border-radius:8px;width:34px;height:34px;font-size:22px;cursor:pointer}.property-description-card > div:last-child{padding:16px;max-height:65vh;overflow:auto;white-space:pre-wrap;color:#334155;font-size:14px;line-height:1.55}
+@media(max-width:760px){
+ .property-gallery{height:105px}.property-gallery-empty{height:105px}.gallery-nav{width:28px;height:28px;font-size:21px}.property-modal-main-info h2{font-size:19px !important}.property-text-row p{font-size:9px !important}.read-more-btn{font-size:8px}.property-image-viewer{padding:10px}.property-image-viewer img{max-width:96vw;max-height:76vh}.property-image-viewer-close{top:10px;right:10px;width:38px;height:38px}.property-image-viewer-nav{width:38px;height:38px;font-size:29px}.property-image-viewer-nav.prev{left:8px}.property-image-viewer-nav.next{right:8px}.property-description-card{width:94vw;max-height:82vh}.property-description-card > div:last-child{max-height:68vh;font-size:13px}
+}
+</style>
+
 </head>
 <body>
 <header class="site-header">
@@ -1906,6 +1939,21 @@ footer .footer-brand img {
   </section>
   <section class="about" id="about"><div><span class="eyebrow">I REALTY TECHNOLOGIES</span><h2>Property expertise with a technology mindset.</h2></div><p>We are building a simple, trustworthy platform for buyers, sellers, agents and channel partners. Real estate is our first service; technology, interiors and international trade are the next steps.</p></section>
 
+  <div id="propertyImageViewer" class="property-image-viewer" aria-hidden="true">
+    <button id="propertyImageViewerClose" class="property-image-viewer-close" type="button" aria-label="Close image viewer">×</button>
+    <button id="propertyImagePrev" class="property-image-viewer-nav prev" type="button" aria-label="Previous image">‹</button>
+    <img id="propertyImageViewerImg" src="" alt="Property image">
+    <button id="propertyImageNext" class="property-image-viewer-nav next" type="button" aria-label="Next image">›</button>
+    <div id="propertyImageViewerCount" class="property-image-viewer-count"></div>
+  </div>
+
+  <div id="propertyDescriptionViewer" class="property-description-viewer" aria-hidden="true">
+    <div class="property-description-card">
+      <div class="property-description-head"><strong id="propertyDescriptionTitle">Description</strong><button id="propertyDescriptionClose" type="button" aria-label="Close description">×</button></div>
+      <div id="propertyDescriptionText"></div>
+    </div>
+  </div>
+
   <div id="propertyModal" class="property-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="property-modal">
       <div class="property-modal-head">
@@ -1969,25 +2017,105 @@ function setMessage(id, text, ok = true) {
   }
 }
 
+function getPropertyImages(p) {
+  let imgs = p?.image_urls;
+  if (typeof imgs === 'string') {
+    try { imgs = JSON.parse(imgs); } catch (_) { imgs = [imgs]; }
+  }
+  if (!Array.isArray(imgs)) imgs = [];
+  imgs = imgs.map(x => String(x || '').trim()).filter(Boolean);
+  if (!imgs.length && p?.image_url) imgs = [String(p.image_url).trim()];
+  return [...new Set(imgs)].slice(0, 8);
+}
+
+let currentPropertyImages = [];
+let currentPropertyImageIndex = 0;
+
+function renderPropertyGallery(images, title) {
+  if (!images.length) return `<div class="property-gallery-empty">Property image unavailable</div>`;
+  return `
+    <div class="property-gallery">
+      <button class="gallery-nav gallery-prev" type="button" aria-label="Previous image" ${images.length < 2 ? 'hidden' : ''}>‹</button>
+      <button class="gallery-main" type="button" aria-label="Open property image in full size">
+        <img id="propertyGalleryMain" class="property-modal-image" src="${esc(images[0])}" alt="${esc(title)}">
+      </button>
+      <button class="gallery-nav gallery-next" type="button" aria-label="Next image" ${images.length < 2 ? 'hidden' : ''}>›</button>
+      ${images.length > 1 ? `<div class="gallery-dots">${images.map((_,i)=>`<button class="gallery-dot ${i===0?'active':''}" type="button" data-gallery-index="${i}" aria-label="View image ${i+1}"></button>`).join('')}</div>` : ''}
+      ${images.length > 1 ? `<span class="gallery-count">1 / ${images.length}</span>` : ''}
+    </div>`;
+}
+
+function setPropertyGalleryIndex(index, openViewer = false) {
+  if (!currentPropertyImages.length) return;
+  currentPropertyImageIndex = (index + currentPropertyImages.length) % currentPropertyImages.length;
+  const main = document.getElementById('propertyGalleryMain');
+  if (main) main.src = currentPropertyImages[currentPropertyImageIndex];
+  document.querySelectorAll('.gallery-dot').forEach((dot, i) => dot.classList.toggle('active', i === currentPropertyImageIndex));
+  const count = document.querySelector('.gallery-count');
+  if (count) count.textContent = `${currentPropertyImageIndex + 1} / ${currentPropertyImages.length}`;
+  if (openViewer) openImageViewer(currentPropertyImageIndex);
+}
+
+function openImageViewer(index) {
+  if (!currentPropertyImages.length) return;
+  currentPropertyImageIndex = (index + currentPropertyImages.length) % currentPropertyImages.length;
+  const viewer = document.getElementById('propertyImageViewer');
+  const img = document.getElementById('propertyImageViewerImg');
+  const count = document.getElementById('propertyImageViewerCount');
+  img.src = currentPropertyImages[currentPropertyImageIndex];
+  count.textContent = `${currentPropertyImageIndex + 1} / ${currentPropertyImages.length}`;
+  viewer.classList.add('open');
+  viewer.setAttribute('aria-hidden','false');
+}
+
+function closeImageViewer() {
+  const viewer = document.getElementById('propertyImageViewer');
+  viewer.classList.remove('open');
+  viewer.setAttribute('aria-hidden','true');
+}
+
+function stepImageViewer(delta) {
+  if (!currentPropertyImages.length) return;
+  currentPropertyImageIndex = (currentPropertyImageIndex + delta + currentPropertyImages.length) % currentPropertyImages.length;
+  openImageViewer(currentPropertyImageIndex);
+  setPropertyGalleryIndex(currentPropertyImageIndex, false);
+}
+
+function openDescriptionViewer(text, title='Description') {
+  const viewer = document.getElementById('propertyDescriptionViewer');
+  document.getElementById('propertyDescriptionTitle').textContent = title;
+  document.getElementById('propertyDescriptionText').textContent = text;
+  viewer.classList.add('open');
+  viewer.setAttribute('aria-hidden','false');
+}
+
+function closeDescriptionViewer() {
+  const viewer = document.getElementById('propertyDescriptionViewer');
+  viewer.classList.remove('open');
+  viewer.setAttribute('aria-hidden','true');
+}
+
 function openProperty(id) {
   const p = currentProperties.find(x => x.id === id);
   if (!p) return;
 
   const modal = document.getElementById('propertyModal');
   const content = document.getElementById('modalContent');
-  const image = p.image_url
-    ? `<img class="property-modal-image" src="${esc(p.image_url)}" alt="${esc(p.title)}">`
-    : '';
+  currentPropertyImages = getPropertyImages(p);
+  currentPropertyImageIndex = 0;
 
   const maps = p.map_location
     ? `<p><a class="map-link" href="${esc(mapHref(p.map_location))}" target="_blank" rel="noopener">View on Google Maps ↗</a></p>`
     : '';
 
+  const description = String(p.description || '').trim();
+  const features = String(p.features || '').trim();
+
   content.innerHTML = `
-    ${image}
-    <div style="margin-top:18px">
+    ${renderPropertyGallery(currentPropertyImages, p.title)}
+    <div class="property-modal-main-info">
       <div class="property-top"><span>${esc(p.property_type)}</span><span>${esc(p.city)}</span></div>
-      <h2 style="margin:8px 0">${esc(p.title)}</h2>
+      <h2>${esc(p.title)}</h2>
       <p>${esc(p.locality || 'Location details available on enquiry')}</p>
       ${maps}
       <div class="detail-grid">
@@ -1996,52 +2124,45 @@ function openProperty(id) {
         ${p.bedrooms ? `<div class="detail-item"><small>Bedrooms</small><strong>${esc(p.bedrooms)}</strong></div>` : ''}
         <div class="detail-item"><small>Location</small><strong>${esc(p.locality || p.city)}</strong></div>
       </div>
-      ${p.description ? `<div><h4>Description</h4><p>${esc(p.description)}</p></div>` : ''}
-      ${p.features ? `<div><h4>Features</h4><p>${esc(p.features)}</p></div>` : ''}
+      ${description ? `<div class="property-text-row"><div><h4>Description</h4><p>${esc(description)}</p></div>${description.length > 150 ? `<button type="button" class="read-more-btn" id="readDescriptionBtn">Read full description</button>` : ''}</div>` : ''}
+      ${features ? `<div class="property-text-row"><div><h4>Features</h4><p>${esc(features)}</p></div>${features.length > 150 ? `<button type="button" class="read-more-btn" id="readFeaturesBtn">Read full features</button>` : ''}</div>` : ''}
     </div>
 
     <div class="lead-card">
       <h4>Interested in this property?</h4>
       <div>Leave your number and our team will contact you.</div>
       <form id="propertyLeadForm" class="lead-form">
-        <label>
-          Name *
-          <input id="propertyLeadName" required maxlength="100" placeholder="Your name">
-        </label>
-        <label>
-          Phone number *
-          <input id="propertyLeadPhone" required inputmode="numeric" maxlength="10" placeholder="10-digit mobile number">
-        </label>
+        <label>Name *<input id="propertyLeadName" required maxlength="100" placeholder="Your name"></label>
+        <label>Phone number *<input id="propertyLeadPhone" required inputmode="numeric" maxlength="10" placeholder="10-digit mobile number"></label>
         <button class="lead-submit" type="submit">Get More Details</button>
       </form>
       <div id="propertyLeadMessage" class="form-message" aria-live="polite"></div>
     </div>
   `;
 
+  document.querySelector('.gallery-prev')?.addEventListener('click', () => setPropertyGalleryIndex(currentPropertyImageIndex - 1));
+  document.querySelector('.gallery-next')?.addEventListener('click', () => setPropertyGalleryIndex(currentPropertyImageIndex + 1));
+  document.querySelector('.gallery-main')?.addEventListener('click', () => openImageViewer(currentPropertyImageIndex));
+  document.querySelectorAll('.gallery-dot').forEach(dot => dot.addEventListener('click', () => setPropertyGalleryIndex(Number(dot.dataset.galleryIndex))));
+  document.getElementById('readDescriptionBtn')?.addEventListener('click', () => openDescriptionViewer(description, 'Full Description'));
+  document.getElementById('readFeaturesBtn')?.addEventListener('click', () => openDescriptionViewer(features, 'Full Features'));
+
   document.getElementById('propertyLeadForm').addEventListener('submit', async e => {
     e.preventDefault();
     const name = document.getElementById('propertyLeadName').value.trim();
     const phone = document.getElementById('propertyLeadPhone').value.trim();
-
     if (!name || !phoneIsValid(phone)) {
       setMessage('propertyLeadMessage', 'Please enter a valid 10-digit mobile number.', false);
       return;
     }
-
     const { error } = await sb.from('customer_leads').insert({
-      name,
-      phone: phone.replace(/\D/g, ''),
-      property_id: p.id,
-      property_type: p.property_type,
-      location: p.locality || p.city,
-      lead_type: 'property_enquiry'
+      name, phone: phone.replace(/\D/g, ''), property_id: p.id,
+      property_type: p.property_type, location: p.locality || p.city, lead_type: 'property_enquiry'
     });
-
     if (error) {
       setMessage('propertyLeadMessage', 'Unable to send your enquiry. Please try again.', false);
       return;
     }
-
     setMessage('propertyLeadMessage', 'Thank you. Our team will contact you shortly.');
     e.target.reset();
   });
@@ -2210,12 +2331,27 @@ document.getElementById('searchBtn').onclick = load;
 document.getElementById('city').onchange = load;
 document.getElementById('type').onchange = load;
 
+document.getElementById('propertyImageViewerClose').onclick = closeImageViewer;
+document.getElementById('propertyImagePrev').onclick = () => stepImageViewer(-1);
+document.getElementById('propertyImageNext').onclick = () => stepImageViewer(1);
+document.getElementById('propertyDescriptionClose').onclick = closeDescriptionViewer;
+document.getElementById('propertyImageViewer').addEventListener('click', e => { if (e.target.id === 'propertyImageViewer') closeImageViewer(); });
+document.getElementById('propertyDescriptionViewer').addEventListener('click', e => { if (e.target.id === 'propertyDescriptionViewer') closeDescriptionViewer(); });
+
 document.getElementById('closeModal').onclick = closeProperty;
 document.getElementById('propertyModal').addEventListener('click', e => {
   if (e.target.id === 'propertyModal') closeProperty();
 });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeProperty();
+  if (e.key === 'Escape') {
+    closeImageViewer();
+    closeDescriptionViewer();
+    closeProperty();
+  }
+  if (document.getElementById('propertyImageViewer').classList.contains('open')) {
+    if (e.key === 'ArrowLeft') stepImageViewer(-1);
+    if (e.key === 'ArrowRight') stepImageViewer(1);
+  }
 });
 
 document.getElementById('requestForm').addEventListener('submit', async e => {
