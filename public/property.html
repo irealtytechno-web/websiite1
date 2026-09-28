@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Property details — I Realty Technologies Pvt. Ltd.">
+<title>Property | I Realty Technologies</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+body{background:#f7f9fc;color:#10213b}.property-page{max-width:1180px;margin:0 auto;padding:24px 18px 60px}
+.back-link{display:inline-flex;margin-bottom:14px;color:#0b3d82;text-decoration:none;font-weight:700}
+.property-detail-card{background:#fff;border:1px solid #e5eaf1;border-radius:18px;overflow:hidden;box-shadow:0 10px 35px rgba(16,33,59,.08)}
+.property-detail-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr)}
+.detail-gallery{background:#f3f6fa;padding:16px}.detail-main-image{width:100%;height:460px;object-fit:contain;background:#fff;border-radius:14px;display:block}
+.thumbs{display:flex;gap:8px;margin-top:10px;overflow:auto}.thumb{width:78px;height:60px;flex:0 0 78px;border:2px solid transparent;border-radius:8px;overflow:hidden;padding:0;background:#fff;cursor:pointer}.thumb.active{border-color:#c99a28}.thumb img{width:100%;height:100%;object-fit:cover}
+.detail-info{padding:28px}.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:#c18d20;font-weight:800}
+.detail-info h1{font-size:34px;line-height:1.12;margin:8px 0}.location{color:#607087;margin:0 0 12px}.price{font-size:30px;font-weight:900;color:#0b3d82;margin:8px 0 16px}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:16px 0}.spec{background:#f8fafc;border-radius:10px;padding:11px}.spec small{display:block;color:#64748b;font-size:11px;margin-bottom:3px}.spec strong{font-size:14px}
+.detail-info h3{margin:20px 0 7px;font-size:17px}.description{color:#475569;line-height:1.6;white-space:pre-line}.action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.action-btn{min-height:46px;border-radius:10px;border:1px solid #0b3d82;background:#fff;color:#0b3d82;text-decoration:none;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer}.action-btn.primary{background:#0b3d82;color:#fff}.action-btn.whatsapp{background:#16a34a;border-color:#16a34a;color:#fff}.share-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.map-link{display:inline-block;margin-top:6px;color:#0b3d82;font-weight:700}
+.not-found{max-width:700px;margin:80px auto;text-align:center;background:#fff;padding:40px;border-radius:18px}.loading{text-align:center;padding:60px}
+@media(max-width:850px){.property-detail-grid{grid-template-columns:1fr}.detail-main-image{height:330px}.detail-info{padding:20px}.detail-info h1{font-size:27px}}
+@media(max-width:520px){.property-page{padding:12px 10px 40px}.detail-gallery{padding:8px}.detail-main-image{height:250px}.action-row,.share-row{grid-template-columns:1fr}.price{font-size:26px}}
+</style>
+</head>
+<body>
+<main class="property-page">
+<a class="back-link" href="index.html#properties">← Back to Properties</a>
+<div id="propertyRoot" class="loading">Loading property…</div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="supabase-client.js"></script>
+<script>
+const sb=getSupabase();
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+function formatPrice(v){const a=Number(String(v??'').replace(/[₹,\s]/g,''));if(!Number.isFinite(a))return String(v??'');const c=n=>Number(n.toFixed(2)).toLocaleString('en-IN',{maximumFractionDigits:2});if(a>=1e7)return c(a/1e7)+' Cr';if(a>=1e5){const l=Math.floor(a/1e5),r=Math.round(a-l*1e5),t=Math.floor(r/1000),ru=r%1000;return `${l} Lakh${t?` ${t} Thousand`:''}${ru?` ${ru}`:''}`}return Math.round(a).toLocaleString('en-IN')}
+function getImages(p){let x=p?.image_urls;if(typeof x==='string'){try{x=JSON.parse(x)}catch(_){x=[x]}}if(!Array.isArray(x))x=[];x=x.map(v=>String(v||'').trim()).filter(Boolean);if(!x.length&&p?.image_url)x=[String(p.image_url).trim()];return[...new Set(x)].slice(0,8)}
+function mapHref(x){if(!x)return'';try{const u=new URL(x);if(u.protocol==='https:'&&(u.hostname==='maps.app.goo.gl'||u.hostname.endsWith('.google.com')||u.hostname==='google.com'))return u.href}catch(_){}return`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x)}`}
+function propertyUrl(id){const u=new URL('property.html',location.href);u.searchParams.set('id',id);return u.href}
+async function copyLink(url){try{await navigator.clipboard.writeText(url)}catch(_){const t=document.createElement('textarea');t.value=url;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}}
+function share(p){const url=propertyUrl(p.id),txt=`${p.title}\n${[p.locality,p.city].filter(Boolean).join(', ')}\n${p.price_value?'₹ '+formatPrice(p.price_value):''}\n\n${url}`;const choice=prompt('Share this property:\\n\\n1 = WhatsApp\\n2 = Facebook\\n3 = Instagram (copy link)\\n4 = Copy link');if(choice==='1')window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');else if(choice==='2')window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url),'_blank');else if(choice==='3'){copyLink(url);window.open('https://www.instagram.com/','_blank')}else if(choice==='4')copyLink(url)}
+function render(p){const imgs=getImages(p);document.title=`${p.title||'Property'} | I Realty Technologies`;const root=document.getElementById('propertyRoot');root.className='property-detail-card';root.innerHTML=`
+<div class="property-detail-grid"><section class="detail-gallery">
+${imgs[0]?`<img id="mainImage" class="detail-main-image" src="${esc(imgs[0])}" alt="${esc(p.title)}">`:'<div class="detail-main-image" style="display:grid;place-items:center">Property image unavailable</div>'}
+${imgs.length>1?`<div class="thumbs">${imgs.map((im,i)=>`<button class="thumb ${i===0?'active':''}" data-i="${i}" type="button"><img src="${esc(im)}" alt=""></button>`).join('')}</div>`:''}
+</section><section class="detail-info">
+<div class="eyebrow">${esc(p.property_type)} · ${esc(p.city)}</div><h1>${esc(p.title)}</h1><p class="location">📍 ${esc(p.locality||p.city)}</p>
+${p.price_value?`<div class="price">₹ ${esc(formatPrice(p.price_value))} ${esc(p.price_unit||'')}</div>`:''}
+<div class="specs">${p.area_value?`<div class="spec"><small>Area</small><strong>${esc(p.area_value)} ${esc(p.area_unit||'sq.ft')}</strong></div>`:''}${p.bedrooms?`<div class="spec"><small>Bedrooms</small><strong>${esc(p.bedrooms)}</strong></div>`:''}<div class="spec"><small>Property Type</small><strong>${esc(p.property_type)}</strong></div><div class="spec"><small>City</small><strong>${esc(p.city)}</strong></div></div>
+${p.map_location?`<a class="map-link" href="${esc(mapHref(p.map_location))}" target="_blank" rel="noopener">📍 View on Google Maps ↗</a>`:''}
+${p.description?`<h3>About this property</h3><div class="description">${esc(p.description)}</div>`:''}${p.features?`<h3>Features</h3><div class="description">${esc(p.features)}</div>`:''}
+<div class="action-row"><a class="action-btn primary" href="tel:+916300181062">☎ Call Now</a><a class="action-btn whatsapp" href="https://wa.me/916300181062?text=${encodeURIComponent('I am interested in: '+p.title+'\\n'+propertyUrl(p.id))}" target="_blank">WhatsApp</a></div>
+<div class="share-row"><button class="action-btn" id="shareBtn" type="button">🔗 Share Property</button><button class="action-btn" id="copyBtn" type="button">Copy Property Link</button></div>
+</section></div>`;
+document.querySelectorAll('.thumb').forEach(b=>b.onclick=()=>{document.getElementById('mainImage').src=imgs[Number(b.dataset.i)];document.querySelectorAll('.thumb').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
+document.getElementById('shareBtn').onclick=()=>share(p);document.getElementById('copyBtn').onclick=async()=>{await copyLink(propertyUrl(p.id));document.getElementById('copyBtn').textContent='✓ Link Copied';setTimeout(()=>document.getElementById('copyBtn').textContent='Copy Property Link',1800)}
+}
+async function load(){const id=new URLSearchParams(location.search).get('id');if(!id){document.getElementById('propertyRoot').innerHTML='<div class="not-found"><h2>Property link is incomplete</h2><a href="index.html#properties">Browse Properties</a></div>';return}const{data,error}=await sb.from('public_inventory').select('*').eq('id',id).maybeSingle();if(error||!data){document.getElementById('propertyRoot').innerHTML='<div class="not-found"><h2>Property not found</h2><p>This property may have been removed or is no longer available.</p><a href="index.html#properties">Browse Properties</a></div>';return}render(data)}
+load();
+</script>
+</body>
+</html>

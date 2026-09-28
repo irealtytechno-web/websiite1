@@ -683,6 +683,65 @@
   font-weight: 650;
 }
 
+
+  /* ===== PROPERTY SHARING ===== */
+  .share-property-btn{flex:1 1 150px;min-height:42px;border:1px solid #c99a28;border-radius:10px;background:#fff;color:#073b80;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px}
+  .share-property-btn:hover{background:#fff9e8}
+  .share-modal-backdrop{position:fixed;inset:0;background:rgba(7,31,73,.68);z-index:1200;display:none;align-items:center;justify-content:center;padding:16px}
+  .share-modal-backdrop.open{display:flex}
+  .share-modal{width:min(520px,100%);background:#fff;border-radius:18px;box-shadow:0 25px 80px rgba(0,0,0,.3);overflow:hidden}
+  .share-modal-head{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid #e5eaf1}
+  .share-modal-head strong{font-size:20px;color:#10213b}
+  .share-close{width:38px;height:38px;border:0;border-radius:10px;background:#f1f5f9;cursor:pointer;font-size:20px;font-weight:700}
+  .share-modal-body{padding:18px}
+  .share-property-preview{display:flex;gap:12px;padding:10px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;margin-bottom:18px}
+  .share-property-preview img{width:86px;height:70px;object-fit:cover;border-radius:8px;background:#eef2f7}
+  .share-property-preview strong{display:block;color:#10213b;font-size:15px;line-height:1.25}
+  .share-property-preview span{display:block;color:#64748b;font-size:12px;margin-top:4px}
+  .share-options{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .share-option{border:1px solid #e2e8f0;background:#fff;border-radius:12px;padding:11px 7px;cursor:pointer;text-align:center;font-weight:800;color:#10213b}
+  .share-option:hover{background:#f8fafc}
+  .share-icon{width:42px;height:42px;border-radius:50%;margin:0 auto 7px;display:grid;place-items:center;color:#fff;font-size:21px;font-weight:900}
+  .share-wa .share-icon{background:#16c47f}.share-fb .share-icon{background:#1877f2}.share-ig .share-icon{background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7)}.share-copy .share-icon{background:#475569}
+  .share-option small{display:block;font-size:11px}
+  .share-link-row{display:flex;gap:7px;margin-top:16px}
+  .share-link-row input{flex:1;min-width:0;height:42px;border:1px solid #cbd5e1;border-radius:9px;padding:0 10px;font-size:12px;background:#f8fafc}
+  .share-copy-btn{border:0;border-radius:9px;background:#0b3d82;color:#fff;padding:0 14px;font-weight:800;cursor:pointer}
+  .share-status{text-align:center;font-size:12px;font-weight:700;color:#166534;min-height:17px;margin-top:9px}
+  @media(max-width:520px){.share-modal-backdrop{padding:8px}.share-modal-body{padding:14px}.share-options{grid-template-columns:repeat(2,1fr)}.share-link-row{flex-direction:column}.share-copy-btn{height:42px}}
+
+
+  /* Compact property-card actions: More Details + Share on one row */
+  .compact-property-actions{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:8px !important;
+    margin-top:10px;
+  }
+  .compact-property-actions .more-details,
+  .compact-property-actions .share-property-btn{
+    width:100%;
+    min-width:0;
+    height:42px;
+    min-height:42px;
+    margin:0 !important;
+    padding:8px 6px;
+    white-space:nowrap;
+    box-sizing:border-box;
+    font-size:15px;
+    line-height:1;
+    border-radius:10px;
+  }
+  @media(max-width:520px){
+    .compact-property-actions{
+      grid-template-columns:1fr 1fr !important;
+      gap:6px !important;
+    }
+    .compact-property-actions .more-details,
+    .compact-property-actions .share-property-btn{
+      font-size:13px;
+    }
+  }
 </style>
 
 
@@ -1850,6 +1909,58 @@ footer .footer-brand img {
 }
 </style>
 
+
+<style id="final-property-action-size-fix">
+  #results .compact-property-actions,
+  .compact-property-actions{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:8px !important;
+    align-items:stretch !important;
+  }
+
+  #results .compact-property-actions .more-details,
+  #results .compact-property-actions .share-property-btn,
+  .compact-property-actions .more-details,
+  .compact-property-actions .share-property-btn{
+    width:100% !important;
+    height:42px !important;
+    min-height:42px !important;
+    max-height:42px !important;
+    padding:0 !important;
+    margin:0 !important;
+    box-sizing:border-box !important;
+    border-radius:8px !important;
+    font-size:15px !important;
+    line-height:1 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    flex:none !important;
+  }
+
+  #results .compact-property-actions .share-property-btn,
+  .compact-property-actions .share-property-btn{
+    border:1px solid #c99a28 !important;
+  }
+</style>
+
+<style id="property-lead-scroll-fix">
+  .property-modal-content{
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    scrollbar-width:thin;
+  }
+  .property-modal-content .lead-card{
+    margin-bottom:4px !important;
+  }
+  .property-modal-content .form-message{
+    display:block !important;
+    min-height:18px;
+    padding-bottom:2px;
+    line-height:1.35 !important;
+  }
+</style>
 </head>
 <body>
 <header class="site-header">
@@ -1973,6 +2084,36 @@ footer .footer-brand img {
 <script src="supabase-config.js"></script>
 <script src="supabase-client.js"></script>
 
+<div id="shareModal" class="share-modal-backdrop" aria-hidden="true">
+  <div class="share-modal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+    <div class="share-modal-head">
+      <strong id="shareModalTitle">Share this Property</strong>
+      <button type="button" class="share-close" id="shareModalClose" aria-label="Close">×</button>
+    </div>
+    <div class="share-modal-body">
+      <div class="share-property-preview">
+        <img id="sharePreviewImage" src="" alt="">
+        <div>
+          <strong id="sharePreviewTitle"></strong>
+          <span id="sharePreviewLocation"></span>
+          <span id="sharePreviewPrice"></span>
+        </div>
+      </div>
+      <div class="share-options">
+        <button type="button" class="share-option share-wa" id="shareWhatsApp"><span class="share-icon">◔</span><small>WhatsApp</small></button>
+        <button type="button" class="share-option share-fb" id="shareFacebook"><span class="share-icon">f</span><small>Facebook</small></button>
+        <button type="button" class="share-option share-ig" id="shareInstagram"><span class="share-icon">◎</span><small>Instagram</small></button>
+        <button type="button" class="share-option share-copy" id="shareCopy"><span class="share-icon">↗</span><small>Copy Link</small></button>
+      </div>
+      <div class="share-link-row">
+        <input id="sharePropertyUrl" type="text" readonly aria-label="Property link">
+        <button type="button" class="share-copy-btn" id="shareCopyBtn">Copy</button>
+      </div>
+      <div id="shareStatus" class="share-status" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
 <script>
 const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({
   '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
@@ -2095,6 +2236,57 @@ function closeDescriptionViewer() {
   viewer.setAttribute('aria-hidden','true');
 }
 
+
+function propertyPublicUrl(id){
+  const u=new URL('property.html',window.location.href);
+  u.searchParams.set('id',id);
+  return u.href;
+}
+function propertyShareText(p){
+  const location=[p.locality,p.city].filter(Boolean).join(', ');
+  const price=p.price_value?`₹ ${formatPrice(p.price_value)}`:'';
+  return [p.title,location,price].filter(Boolean).join(' | ');
+}
+let propertyToShare=null;
+function openShareDialog(p){
+  if(!p||!p.id)return;
+  propertyToShare=p;
+  const images=getPropertyImages(p);
+  document.getElementById('sharePreviewImage').src=images[0]||'';
+  document.getElementById('sharePreviewImage').alt=p.title||'Property';
+  document.getElementById('sharePreviewTitle').textContent=p.title||'Property';
+  document.getElementById('sharePreviewLocation').textContent=[p.locality,p.city].filter(Boolean).join(', ');
+  document.getElementById('sharePreviewPrice').textContent=p.price_value?`₹ ${formatPrice(p.price_value)}`:'';
+  document.getElementById('sharePropertyUrl').value=propertyPublicUrl(p.id);
+  document.getElementById('shareStatus').textContent='';
+  const m=document.getElementById('shareModal');m.classList.add('open');m.setAttribute('aria-hidden','false');
+}
+function closeShareDialog(){
+  const m=document.getElementById('shareModal');m.classList.remove('open');m.setAttribute('aria-hidden','true');
+}
+async function copyPropertyLink(){
+  if(!propertyToShare)return;
+  const url=propertyPublicUrl(propertyToShare.id);
+  try{await navigator.clipboard.writeText(url)}
+  catch(_){const i=document.getElementById('sharePropertyUrl');i.focus();i.select();document.execCommand('copy')}
+  document.getElementById('shareStatus').textContent='✓ Property link copied';
+}
+function shareToWhatsApp(){
+  if(!propertyToShare)return;
+  const url=propertyPublicUrl(propertyToShare.id);
+  const text=`${propertyShareText(propertyToShare)}\n\nView property:\n${url}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank','noopener');
+}
+function shareToFacebook(){
+  if(!propertyToShare)return;
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(propertyPublicUrl(propertyToShare.id))}`,'_blank','noopener');
+}
+async function shareToInstagram(){
+  if(!propertyToShare)return;
+  await copyPropertyLink();
+  window.open('https://www.instagram.com/','_blank','noopener');
+}
+
 function openProperty(id) {
   const p = currentProperties.find(x => x.id === id);
   if (!p) return;
@@ -2128,6 +2320,11 @@ function openProperty(id) {
       ${features ? `<div class="property-text-row"><div><h4>Features</h4><p>${esc(features)}</p></div>${features.length > 150 ? `<button type="button" class="read-more-btn" id="readFeaturesBtn">Read full features</button>` : ''}</div>` : ''}
     </div>
 
+    <div class="property-actions" style="margin:10px 0 4px;">
+      <button type="button" class="share-property-btn" id="modalSharePropertyBtn">🔗 Share Property</button>
+      <a class="contact-property" href="tel:+916300181062">☎ Call +91 6300181062</a>
+    </div>
+
     <div class="lead-card">
       <h4>Interested in this property?</h4>
       <div>Leave your number and our team will contact you.</div>
@@ -2146,6 +2343,7 @@ function openProperty(id) {
   document.querySelectorAll('.gallery-dot').forEach(dot => dot.addEventListener('click', () => setPropertyGalleryIndex(Number(dot.dataset.galleryIndex))));
   document.getElementById('readDescriptionBtn')?.addEventListener('click', () => openDescriptionViewer(description, 'Full Description'));
   document.getElementById('readFeaturesBtn')?.addEventListener('click', () => openDescriptionViewer(features, 'Full Features'));
+  document.getElementById('modalSharePropertyBtn')?.addEventListener('click', () => openShareDialog(p));
 
   document.getElementById('propertyLeadForm').addEventListener('submit', async e => {
     e.preventDefault();
@@ -2315,8 +2513,9 @@ async function load() {
               ${p.area_value ? `<span>${esc(p.area_value)} ${esc(p.area_unit || 'sq.ft')}</span>` : ''}
               ${p.price_value ? `<strong>₹ ${esc(formatPrice(p.price_value))} ${esc(p.price_unit || '')}</strong>` : ''}
             </div>
-            <div class="property-actions">
+            <div class="property-actions compact-property-actions">
               <button type="button" class="more-details" onclick="openProperty('${esc(p.id)}')">More Details</button>
+              <button type="button" class="share-property-btn" onclick="openShareDialog(currentProperties.find(x => x.id === '${esc(p.id)}'))">🔗 Share</button>
             </div>
           </div>
         </article>`;
@@ -2325,6 +2524,13 @@ async function load() {
     currentProperties = [];
     box.innerHTML = '<div class="empty"><strong>Properties are temporarily unavailable.</strong><span>Please try again shortly.</span></div>';
   }
+}
+
+function openPropertyFromUrl(){
+  const id=new URLSearchParams(window.location.search).get('id');
+  if(!id)return;
+  const p=currentProperties.find(x=>String(x.id)===String(id));
+  if(p)openProperty(p.id);
 }
 
 document.getElementById('searchBtn').onclick = load;
@@ -2337,6 +2543,14 @@ document.getElementById('propertyImageNext').onclick = () => stepImageViewer(1);
 document.getElementById('propertyDescriptionClose').onclick = closeDescriptionViewer;
 document.getElementById('propertyImageViewer').addEventListener('click', e => { if (e.target.id === 'propertyImageViewer') closeImageViewer(); });
 document.getElementById('propertyDescriptionViewer').addEventListener('click', e => { if (e.target.id === 'propertyDescriptionViewer') closeDescriptionViewer(); });
+
+document.getElementById('shareModalClose').onclick = closeShareDialog;
+document.getElementById('shareCopy').onclick = copyPropertyLink;
+document.getElementById('shareCopyBtn').onclick = copyPropertyLink;
+document.getElementById('shareWhatsApp').onclick = shareToWhatsApp;
+document.getElementById('shareFacebook').onclick = shareToFacebook;
+document.getElementById('shareInstagram').onclick = shareToInstagram;
+document.getElementById('shareModal').addEventListener('click', e => { if(e.target.id==='shareModal') closeShareDialog(); });
 
 document.getElementById('closeModal').onclick = closeProperty;
 document.getElementById('propertyModal').addEventListener('click', e => {
@@ -2385,7 +2599,8 @@ document.getElementById('requestForm').addEventListener('submit', async e => {
 });
 
 loadPromotions();
-load();
+load().then(openPropertyFromUrl);
 </script>
+
 </body></html>
 

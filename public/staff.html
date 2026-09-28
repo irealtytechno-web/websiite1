@@ -117,6 +117,95 @@
            class="mb-5 bg-red-100 text-red-800 px-4 py-3 rounded-lg">
       </div>
 
+
+      <!-- Customer Leads -->
+      <section x-show="user?.role === 'admin'"
+               class="bg-white rounded-xl shadow p-6 mb-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+          <div>
+            <h3 class="text-xl font-bold">Customer Leads</h3>
+            <p class="text-sm text-slate-500">
+              Enquiries submitted from the public website.
+              <span class="font-semibold" x-text="customerLeads.length"></span> total
+            </p>
+          </div>
+          <button @click="loadLeads()"
+                  class="border border-slate-300 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50">
+            Refresh
+          </button>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-3 mb-5">
+          <input x-model="leadSearch" type="search"
+                 placeholder="Search name or phone..."
+                 class="border rounded-lg px-4 py-2.5">
+          <select x-model="leadTypeFilter" class="border rounded-lg px-4 py-2.5">
+            <option value="all">All enquiry types</option>
+            <option value="property_enquiry">Property enquiries</option>
+            <option value="property_request">Property requests</option>
+          </select>
+          <button @click="leadSearch=''; leadTypeFilter='all'"
+                  class="border border-slate-300 rounded-lg px-4 py-2.5 font-semibold">
+            Clear Filter
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50">
+              <tr class="text-left">
+                <th class="p-3">Customer</th>
+                <th class="p-3">Phone</th>
+                <th class="p-3">Property / Requirement</th>
+                <th class="p-3">Type</th>
+                <th class="p-3">Received</th>
+                <th class="p-3">Action</th>
+                <th class="p-3">Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="lead in filteredLeads" :key="lead.id">
+                <tr class="border-t hover:bg-slate-50 align-top">
+                  <td class="p-3 font-semibold" x-text="lead.name || '—'"></td>
+                  <td class="p-3 whitespace-nowrap" x-text="lead.phone || '—'"></td>
+                  <td class="p-3 min-w-64">
+                    <div class="font-semibold"
+                         x-text="leadPropertyTitle(lead.property_id) || lead.property_type || 'Property request'"></div>
+                    <div class="text-xs text-slate-500"
+                         x-text="lead.location || lead.requirement || '—'"></div>
+                    <div x-show="lead.budget" class="text-xs text-slate-500"
+                         x-text="'Budget: ' + lead.budget"></div>
+                  </td>
+                  <td class="p-3 whitespace-nowrap">
+                    <span class="px-2 py-1 rounded bg-blue-50 text-blue-700 text-xs font-semibold"
+                          x-text="lead.lead_type === 'property_request' ? 'Request' : 'Property Enquiry'"></span>
+                  </td>
+                  <td class="p-3 whitespace-nowrap text-slate-600"
+                      x-text="formatLeadDate(lead.created_at)"></td>
+                  <td class="p-3 whitespace-nowrap">
+                    <a :href="'tel:' + String(lead.phone || '').replace(/\D/g,'')"
+                       class="text-blue-700 font-semibold mr-3">Call</a>
+                    <a :href="'https://wa.me/91' + String(lead.phone || '').replace(/\D/g,'')"
+                       target="_blank" rel="noopener"
+                       class="text-green-700 font-semibold">WhatsApp</a>
+                  </td>
+                  <td class="p-3 whitespace-nowrap">
+                    <button x-show="user?.role === 'admin'"
+                            @click="deleteLead(lead.id)"
+                            class="text-red-600 font-semibold hover:text-red-800">
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              </template>
+              <tr x-show="filteredLeads.length === 0">
+                <td colspan="7" class="p-10 text-center text-slate-500">No customer leads found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <!-- Admin Staff Access -->
       <section x-show="user?.role === 'admin'"
                class="bg-white rounded-xl shadow p-6 mb-6">
@@ -645,6 +734,10 @@ function staffApp() {
     promoRibbon: { id:null, message:'', link_url:'', enabled:true, sort_order:0 },
     promoImageFile: null,
 
+    customerLeads: [],
+    leadSearch: '',
+    leadTypeFilter: 'all',
+
     editing: false,
 
     staffEmail: '',
@@ -713,6 +806,37 @@ function staffApp() {
       });
     },
 
+    get filteredLeads() {
+      const search = String(this.leadSearch || '').trim().toLowerCase();
+      return (this.customerLeads || []).filter(lead => {
+        const typeMatches =
+          this.leadTypeFilter === 'all' ||
+          String(lead.lead_type || '') === this.leadTypeFilter;
+        const haystack = [
+          lead.name || '', lead.phone || '', lead.property_type || '',
+          lead.location || '', lead.requirement || '', lead.budget || '',
+          this.leadPropertyTitle(lead.property_id) || ''
+        ].join(' ').toLowerCase();
+        return typeMatches && (!search || haystack.includes(search));
+      });
+    },
+
+    leadPropertyTitle(propertyId) {
+      if (!propertyId) return '';
+      const item = (this.inventory || []).find(x => String(x.id) === String(propertyId));
+      return item?.title || '';
+    },
+
+    formatLeadDate(value) {
+      if (!value) return '—';
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return value;
+      return d.toLocaleString('en-IN', {
+        day:'2-digit', month:'short', year:'numeric',
+        hour:'2-digit', minute:'2-digit'
+      });
+    },
+
     approvalCount(tabValue) {
       const cityKey = value => String(value || '').trim().toLowerCase();
       return this.inventory.filter(item => {
@@ -759,6 +883,7 @@ function staffApp() {
         this.user = await response.json();
 
         await this.loadInventory();
+        await this.loadLeads();
 
         if (this.user.role === 'admin') {
           await this.loadStaff();
@@ -1113,6 +1238,49 @@ window.staffApp = function () {
     const { data: { user } } = await sb.auth.getUser();
     this.inventory = (data || []).map(row => ({ ...row, is_mine: row.created_by === user?.id }));
   };
+  app.deleteLead = async function (id) {
+    if (this.user?.role !== 'admin') {
+      this.error = 'Only Admin can delete customer enquiries.';
+      return;
+    }
+
+    if (!confirm('Delete this customer enquiry? This cannot be undone.')) {
+      return;
+    }
+
+    this.clearMessages();
+
+    try {
+      const { error } = await sb
+        .from('customer_leads')
+        .delete()
+        .eq('id', id);
+
+      fail(error);
+
+      this.message = 'Customer enquiry deleted.';
+      await this.loadLeads();
+    } catch (e) {
+      this.error = e.message || 'Unable to delete customer enquiry.';
+    }
+  };
+
+  app.loadLeads = async function () {
+    try {
+      const { data, error } = await sb
+        .from('customer_leads')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      fail(error);
+      this.customerLeads = data || [];
+    } catch (e) {
+      console.error('Customer leads load error:', e);
+      this.customerLeads = [];
+      this.error = e.message || 'Unable to load customer leads.';
+    }
+  };
+
   app.loadUsers = async function () {
     if (this.user?.role !== 'admin') return;
     const { data, error } = await sb.from('profiles').select('id,email,display_name').order('email');
